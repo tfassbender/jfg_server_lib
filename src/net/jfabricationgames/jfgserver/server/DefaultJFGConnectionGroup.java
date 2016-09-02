@@ -1,7 +1,6 @@
 package net.jfabricationgames.jfgserver.server;
 
 import net.jfabricationgames.jfgserver.client.JFGClientMessage;
-import net.jfabricationgames.jfgserver.client.JFGConnection;
 
 public class DefaultJFGConnectionGroup implements JFGConnectionGroup {
 

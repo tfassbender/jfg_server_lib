@@ -1,5 +1,7 @@
 package net.jfabricationgames.jfgserver.client;
 
-public interface JFGClientMessage {
+import java.io.Serializable;
+
+public interface JFGClientMessage extends Serializable {
 	
 }
