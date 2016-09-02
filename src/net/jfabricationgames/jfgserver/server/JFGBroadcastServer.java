@@ -1,5 +1,9 @@
 package net.jfabricationgames.jfgserver.server;
 
+import net.jfabricationgames.jfgserver.client.JFGClientMessage;
+import net.jfabricationgames.jfgserver.client.JFGServerMessage;
+import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
+
 public class JFGBroadcastServer extends JFGServer {
 
 	public JFGBroadcastServer(int port) {
@@ -8,7 +12,25 @@ public class JFGBroadcastServer extends JFGServer {
 	
 	@Override
 	public void addInterpreter(JFGConnection connection) {
-		// TODO Auto-generated method stub
-		
-	}	
+		connection.setInterpreter(new BroadcastInterpreter());
+	}
+	
+	public void sendBroadcast(JFGClientMessage message) {
+		for (JFGConnection con : connections) {
+			con.sendMessage(message);
+		}
+	}
+	
+	private class BroadcastInterpreter implements JFGServerInterpreter {
+
+		@Override
+		public void interpreteServerMessage(JFGServerMessage message, JFGConnection connection) {
+			if (message instanceof JFGClientMessage) {
+				sendBroadcast((JFGClientMessage) message);
+			}
+			else {
+				System.err.println("JFGBroadcastServer: Couldn't repeat. Message doesn't implement JFGClientMessage");
+			}
+		}
+	}
 }

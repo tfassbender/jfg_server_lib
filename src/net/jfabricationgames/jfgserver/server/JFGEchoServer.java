@@ -1,5 +1,9 @@
 package net.jfabricationgames.jfgserver.server;
 
+import net.jfabricationgames.jfgserver.client.JFGClientMessage;
+import net.jfabricationgames.jfgserver.client.JFGServerMessage;
+import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
+
 public class JFGEchoServer extends JFGServer {
 
 	public JFGEchoServer(int port) {
@@ -8,7 +12,19 @@ public class JFGEchoServer extends JFGServer {
 	
 	@Override
 	public void addInterpreter(JFGConnection connection) {
-		// TODO Auto-generated method stub
+		connection.setInterpreter(new EchoInterpreter());
+	}
+	
+	private class EchoInterpreter implements JFGServerInterpreter {
 		
+		@Override
+		public void interpreteServerMessage(JFGServerMessage message, JFGConnection connection) {
+			if (message instanceof JFGClientMessage) {
+				connection.sendMessage((JFGClientMessage) message);
+			}
+			else {
+				System.err.println("JFGEchoServer: Couldn't repeat. Message doesn't implement JFGClientMessage");
+			}
+		}
 	}
 }
