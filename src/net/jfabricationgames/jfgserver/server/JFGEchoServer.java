@@ -11,6 +11,11 @@ public class JFGEchoServer extends JFGServer {
 	}
 	
 	@Override
+	public void chooseInterpreter() {
+		setInterpreterFactory(new EchoInterpreter());
+	}
+	
+	@Override
 	public void addInterpreter(JFGConnection connection) {
 		connection.setInterpreter(new EchoInterpreter());
 	}
@@ -25,6 +30,11 @@ public class JFGEchoServer extends JFGServer {
 			else {
 				System.err.println("JFGEchoServer: Couldn't repeat. Message doesn't implement JFGClientMessage");
 			}
+		}
+
+		@Override
+		public JFGServerInterpreter getInstance() {
+			return new EchoInterpreter();
 		}
 	}
 }

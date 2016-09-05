@@ -6,4 +6,6 @@ import net.jfabricationgames.jfgserver.server.JFGConnection;
 public interface JFGServerInterpreter {
 
 	public void interpreteServerMessage(JFGServerMessage message, JFGConnection connection);
+	
+	public JFGServerInterpreter getInstance();
 }

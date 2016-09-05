@@ -11,8 +11,8 @@ public class JFGBroadcastServer extends JFGServer {
 	}
 	
 	@Override
-	public void addInterpreter(JFGConnection connection) {
-		connection.setInterpreter(new BroadcastInterpreter());
+	public void chooseInterpreter() {
+		setInterpreterFactory(new BroadcastInterpreter());
 	}
 	
 	public void sendBroadcast(JFGClientMessage message) {
@@ -31,6 +31,11 @@ public class JFGBroadcastServer extends JFGServer {
 			else {
 				System.err.println("JFGBroadcastServer: Couldn't repeat. Message doesn't implement JFGClientMessage");
 			}
+		}
+
+		@Override
+		public JFGServerInterpreter getInstance() {
+			return new BroadcastInterpreter();
 		}
 	}
 }

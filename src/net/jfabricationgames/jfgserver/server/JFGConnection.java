@@ -70,6 +70,25 @@ public class JFGConnection implements Runnable {
 		connection.start();
 	}
 	
+	public void endConnection() {
+		connection.interrupt();
+		try {
+			serverIn.close();
+			serverOut.close();
+		}
+		catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+		//Try to close the socket separately
+		try {
+			socket.close();
+		}
+		catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+		server.removeConnection(this);
+	}
+	
 	public <T extends JFGClientMessage> void sendMessage(T message) {
 		try {
 			serverOut.writeObject(message);

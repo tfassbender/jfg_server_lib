@@ -25,6 +25,11 @@ public class JFGGroupServer extends JFGServer {
 	}
 	
 	@Override
+	public void chooseInterpreter() {
+		setInterpreterFactory(new DefaultGroupInterpreter());
+	}
+	
+	@Override
 	public void addConnection(JFGConnection connection) {
 		super.addConnection(connection);
 		tmpGroup.add(connection);
@@ -33,11 +38,6 @@ public class JFGGroupServer extends JFGServer {
 			groups.add(group);
 			tmpGroup = new ArrayList<JFGConnection>(groupSize);
 		}
-	}
-	
-	@Override
-	public void addInterpreter(JFGConnection connection) {
-		connection.setInterpreter(new DefaultGroupInterpreter());
 	}
 	
 	private class DefaultGroupInterpreter implements JFGServerInterpreter {
@@ -56,6 +56,11 @@ public class JFGGroupServer extends JFGServer {
 			else {
 				System.err.println("JFGGroupServer: Couldn't repeat. Message doesn't implement JFGClientMessage.");
 			}
+		}
+
+		@Override
+		public JFGServerInterpreter getInstance() {
+			return new DefaultGroupInterpreter();
 		}
 	}
 	
