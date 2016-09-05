@@ -21,7 +21,7 @@ public abstract class JFGServer {
 				Socket connectionSocket = welcomeSocket.accept();
 				JFGConnection connection = new JFGConnection(this, connectionSocket);
 				addInterpreter(connection);
-				connections.add(connection);
+				addConnection(connection);
 			}
 		}
 		catch (Exception e) {
@@ -30,6 +30,10 @@ public abstract class JFGServer {
 	}
 	
 	public abstract void addInterpreter(JFGConnection connection);
+	
+	public void addConnection(JFGConnection connection) {
+		connections.add(connection);
+	}
 	
 	public List<JFGConnection> getConnections() {
 		return connections;
