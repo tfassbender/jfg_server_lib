@@ -7,6 +7,12 @@ import net.jfabricationgames.jfgserver.client.JFGClientMessage;
 import net.jfabricationgames.jfgserver.client.JFGServerMessage;
 import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
 
+/**
+ * This server is used to accept all connections and group them into variable sized groups.
+ * If there are enough connections a group is created directly.
+ * 
+ * The groups used can be changed by changing the groupFactory using the setGroupFactory() method.
+ */
 public class JFGGroupServer extends JFGServer {
 	
 	private int groupSize;
@@ -29,6 +35,10 @@ public class JFGGroupServer extends JFGServer {
 		setInterpreterFactory(new DefaultGroupInterpreter());
 	}
 	
+	/**
+	 * Add the connection to the known connections and create a group of the connections.
+	 * The group is created directly when there are enough connections for a group.
+	 */
 	@Override
 	public void addConnection(JFGConnection connection) {
 		super.addConnection(connection);
@@ -40,6 +50,9 @@ public class JFGGroupServer extends JFGServer {
 		}
 	}
 	
+	/**
+	 * A simple implementation of a group server interpreter.
+	 */
 	private class DefaultGroupInterpreter implements JFGServerInterpreter {
 		
 		@Override
@@ -64,6 +77,15 @@ public class JFGGroupServer extends JFGServer {
 		}
 	}
 	
+	/**
+	 * Find the group of a JFGConnecion.
+	 * 
+	 * @param connection
+	 * 		The connection which's group is searched.
+	 * 
+	 * @return
+	 * 		The group of connection.
+	 */
 	public JFGConnectionGroup getGroup(JFGConnection connection) {
 		JFGConnectionGroup group = null;
 		for (JFGConnectionGroup g : groups) {
@@ -76,10 +98,23 @@ public class JFGGroupServer extends JFGServer {
 		return group;
 	}
 	
-	public JFGConnectionGroup getConnectionGroup() {
+	/**
+	 * Get the current JFGConnectionGroup that is used as the factory for all created groups.
+	 * 
+	 * @return
+	 * 		The current group factory.
+	 */
+	public JFGConnectionGroup getGroupFactory() {
 		return connectionGroup;
 	}
-	public void setConnectionGroup(JFGConnectionGroup connectionGroup) {
+	/**
+	 * Set the group factory to a JFGConnectionGroup to create new groups.
+	 * The new groups are created by the getInstance() method of the JFGConnecionGroup implementation.
+	 * 
+	 * @param connectionGroup
+	 * 		The new factory.
+	 */
+	public void setGroupFactory(JFGConnectionGroup connectionGroup) {
 		this.connectionGroup = connectionGroup;
 	}
 }
