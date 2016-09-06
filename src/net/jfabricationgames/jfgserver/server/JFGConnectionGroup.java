@@ -7,7 +7,7 @@ import net.jfabricationgames.jfgserver.client.JFGClientMessage;
 public interface JFGConnectionGroup {
 	
 	/**
-	 * Create a new instance of this JFGConnectionGroup implementation, to group the connections in the parameter list.
+	 * Create a new instance of this JFGConnectionGroup implementation, to group the {@link JFGConnection} in the parameter list.
 	 * This new instance is created by the server.
 	 *  
 	 * @param connections

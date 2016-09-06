@@ -5,7 +5,7 @@ import net.jfabricationgames.jfgserver.client.JFGServerMessage;
 import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
 
 /**
- * A simple implementation of a broadcast server to send broadcast messages to every known connection.
+ * A simple implementation of a broadcast server to send broadcast messages to every known {@link JFGConnection}.
  */
 public class JFGBroadcastServer extends JFGServer {
 	

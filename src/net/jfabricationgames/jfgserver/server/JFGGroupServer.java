@@ -9,9 +9,9 @@ import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
 
 /**
  * This server is used to accept all connections and group them into variable sized groups.
- * If there are enough connections a group is created directly.
+ * If there are enough {@link JFGConnection}s a group is created directly.
  * 
- * The groups used can be changed by changing the groupFactory using the setGroupFactory() method.
+ * The groups used can be changed by changing the groupFactory using the {@link #setGroupFactory(JFGConnectionGroup)} method.
  */
 public class JFGGroupServer extends JFGServer {
 	
@@ -108,8 +108,8 @@ public class JFGGroupServer extends JFGServer {
 		return connectionGroup;
 	}
 	/**
-	 * Set the group factory to a JFGConnectionGroup to create new groups.
-	 * The new groups are created by the getInstance() method of the JFGConnecionGroup implementation.
+	 * Set the group factory to a {@link JFGConnectionGroup} to create new groups.
+	 * The new groups are created by the {@link JFGConnectionGroup#getInstance(List)} method.
 	 * 
 	 * @param connectionGroup
 	 * 		The new factory.

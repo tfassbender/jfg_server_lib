@@ -9,6 +9,12 @@ import net.jfabricationgames.jfgserver.client.JFGClientMessage;
 import net.jfabricationgames.jfgserver.client.JFGServerMessage;
 import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
 
+/**
+ * A JFGConnection represents the server side end of a connection.
+ * For every client there is one JFGConnection instance.
+ * 
+ * The connection is used to forward the messages from the client to the interpreter and vice versa.
+ */
 public class JFGConnection implements Runnable {
 	
 	private JFGServer server;
@@ -23,12 +29,43 @@ public class JFGConnection implements Runnable {
 	private JFGConnectionGroup group;
 	private JFGServerInterpreter interpreter;
 	
+	/**
+	 * Create a new JFGConnection and pass on the server and the connected socket.
+	 * The connection doensn't contain a {@link JFGServerInterpreter} and for this reason it's not started directly.
+	 * 
+	 * The connection is started automatically when the interpreter is set to a non-null value.
+	 * 
+	 * @param server
+	 * 		The {@link JFGServer} instance that accepted the clients request and started the connection.
+	 * 
+	 * @param socket
+	 * 		The socket this connection is connected with.
+	 * 
+	 * @throws IOException
+	 * 		An {@link IOException} is thrown if the in-/out-streams couldn't be created for some reason.
+	 */
 	public JFGConnection(JFGServer server, Socket socket) throws IOException {
 		this.server = server;
 		this.socket = socket;
 		serverIn = new ObjectInputStream(socket.getInputStream());
 		serverOut = new ObjectOutputStream(socket.getOutputStream());
 	}
+	/**
+	 * Create a new JFGConnection and pass on the server and the connected socket and an interpreter.
+	 * Using this constructor the connection is created and directly started.
+	 * 
+	 * @param server
+	 * 		The JFGServer instance that accepted the clients request and started the connection.
+	 * 
+	 * @param socket
+	 * 		The socket this connection is connected with.
+	 * 
+	 * @param interpreter
+	 * 		The {@link JFGServerInterpreter} that interprets the client's input.
+	 * 
+	 * @throws IOException
+	 * 		An {@link IOException} is thrown if the in-/out-streams couldn't be created for some reason.
+	 */
 	public JFGConnection(JFGServer server, Socket socket, JFGServerInterpreter interpreter) throws IOException {
 		this.server = server;
 		this.socket = socket;
@@ -41,6 +78,9 @@ public class JFGConnection implements Runnable {
 		startConnection();
 	}
 	
+	/**
+	 * The run method from {@link Runnable} to make the connection listen to the clients inputs in a different thread.
+	 */
 	@Override
 	public void run() {
 		try {
@@ -66,11 +106,23 @@ public class JFGConnection implements Runnable {
 		}
 	}
 	
-	private void startConnection() {
+	/**
+	 * Start the connection.
+	 * 
+	 * @throws IllegalArgumentException
+	 * 		An {@link IllegalArgumentException} is thrown if the connection thread is already started.
+	 */
+	private void startConnection() throws IllegalArgumentException {
+		if (connection != null) {
+			throw new IllegalArgumentException("The connection thread is already started. Can't start another one.");
+		}
 		connection = new Thread(this);
 		connection.start();
 	}
 	
+	/**
+	 * End the connection and close all resources.
+	 */
 	public void endConnection() {
 		connection.interrupt();
 		try {
@@ -90,6 +142,12 @@ public class JFGConnection implements Runnable {
 		server.removeConnection(this);
 	}
 	
+	/**
+	 * Send a message to the client connected to this JFGConnection.
+	 * 
+	 * @param message
+	 * 		The message to send to the client.
+	 */
 	public void sendMessage(JFGClientMessage message) {
 		try {
 			serverOut.writeObject(message);
@@ -99,17 +157,23 @@ public class JFGConnection implements Runnable {
 			ie.printStackTrace();
 		}
 	}
-
-	protected JFGConnectionGroup getGroup() {
+	
+	public JFGConnectionGroup getGroup() {
 		return group;
 	}
-	protected void setGroup(JFGConnectionGroup group) {
+	public void setGroup(JFGConnectionGroup group) {
 		this.group = group;
 	}
 	
 	public JFGServerInterpreter getInterpreter() {
 		return interpreter;
 	}
+	/**
+	 * Set the interpreter and start the connection.
+	 * 
+	 * @param interpreter
+	 * 		The connections interpreter.
+	 */
 	public void setInterpreter(JFGServerInterpreter interpreter) {
 		this.interpreter = interpreter;
 		if (connection == null) {
@@ -127,6 +191,12 @@ public class JFGConnection implements Runnable {
 	public int getSleepTime() {
 		return sleepTime;
 	}
+	/**
+	 * Set the time to sleep, for the thread, between two reads.
+	 * 
+	 * @param sleepTime
+	 * 		The sleep time in milliseconds.
+	 */
 	public void setSleepTime(int sleepTime) {
 		this.sleepTime = sleepTime;
 	}

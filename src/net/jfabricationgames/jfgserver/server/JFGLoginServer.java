@@ -8,9 +8,9 @@ import net.jfabricationgames.jfgserver.client.JFGServerMessage;
 import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
 
 /**
- * The JFGLoginServer is the most advanced (default) implementation of a JFGServer.
+ * The JFGLoginServer is the most advanced (default) implementation of a {@link JFGServer}.
  * 
- * The default version of the JFGInterpreter just accepts every connection on the first received message.
+ * The default version of the {@link JFGServerInterpreter} just accepts every connection on the first received message.
  * In a real implementation the user data should be checked.
  * 
  * The server is also able to create and manage groups of connections.
@@ -73,13 +73,13 @@ public class JFGLoginServer extends JFGServer {
 	}
 	
 	/**
-	 * Accept the login of a JFGConnection and move it from the pending list to the list of active connections.
+	 * Accept the login of a {@link JFGConnection} and move it from the pending list to the list of active connections.
 	 * 
 	 * @param connection
 	 * 		The connection that is accepted.
 	 * 
 	 * @throws IllegalArgumentException
-	 * 		An IllegalArgumentException is thrown if the connection is not in the pending list.
+	 * 		An {@link IllegalArgumentException} is thrown if the connection is not in the pending list.
 	 */
 	public void acceptLogin(JFGConnection connection) throws IllegalArgumentException {
 		if (waitingConnections.remove(connection)) {
@@ -91,13 +91,13 @@ public class JFGLoginServer extends JFGServer {
 	}
 	
 	/**
-	 * Deny the login of a JFGConnection and close it's connection.
+	 * Deny the login of a {@link JFGConnection} and close it's connection.
 	 * 
 	 * @param connection
 	 * 		The connection that is denied.
 	 * 
 	 * @throws IllegalArgumentException
-	 * 		An IllegalArgumentException is thrown if the connection is not in the pending list.
+	 * 		An {@link IllegalArgumentException} is thrown if the connection is not in the pending list.
 	 */
 	public void denyLogin(JFGConnection connection) throws IllegalArgumentException {
 		if (waitingConnections.remove(connection)) {
@@ -122,7 +122,7 @@ public class JFGLoginServer extends JFGServer {
 	}
 	
 	/**
-	 * Create a JFGConnectionGroup of a list of active connections and manage that group.
+	 * Create a {@link JFGConnectionGroup} of a list of active connections and manage that group.
 	 * 
 	 * @param connections
 	 * 		The connections that are added to a group.

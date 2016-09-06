@@ -5,7 +5,7 @@ import java.util.List;
 import net.jfabricationgames.jfgserver.client.JFGClientMessage;
 
 /**
- * A simple implementation of a JFGConnectionGroup used as default in the JFGGroupServer.
+ * A simple implementation of a {@link JFGConnectionGroup} used as default in the {@link JFGGroupServer}.
  */
 public class DefaultJFGConnectionGroup implements JFGConnectionGroup {
 	
@@ -14,7 +14,7 @@ public class DefaultJFGConnectionGroup implements JFGConnectionGroup {
 	/**
 	 * Create a new DefaultJFGConnectionGroup to use as a factory.
 	 * This group doesn't contain any connections and is only used for the factory in the server.
-	 * All instances containing JFGConnections are to be created using the getInstance() method.
+	 * All instances containing {@link JFGConnection}s are to be created using the {@link JFGConnectionGroup#getInstance(List) getInstance()} method.
 	 */
 	public DefaultJFGConnectionGroup() {
 		
