@@ -18,9 +18,10 @@ public class JFGConnection implements Runnable {
 	private ObjectOutputStream serverOut;
 	
 	private Thread connection;
+	private int sleepTime = 100;
 	
 	private JFGConnectionGroup group;
-	private JFGServerInterpreter interpreter; 
+	private JFGServerInterpreter interpreter;
 	
 	public JFGConnection(JFGServer server, Socket socket) throws IOException {
 		this.server = server;
@@ -51,7 +52,7 @@ public class JFGConnection implements Runnable {
 				else {
 					System.err.println("JFGConnection: Received object is no JFGServerMessage. Couldn't interprete the message.");
 				}
-				Thread.sleep(100);
+				Thread.sleep(sleepTime);
 			}
 		}
 		catch (IOException ioe) {
@@ -89,7 +90,7 @@ public class JFGConnection implements Runnable {
 		server.removeConnection(this);
 	}
 	
-	public <T extends JFGClientMessage> void sendMessage(T message) {
+	public void sendMessage(JFGClientMessage message) {
 		try {
 			serverOut.writeObject(message);
 			serverOut.flush();
@@ -121,5 +122,12 @@ public class JFGConnection implements Runnable {
 	}
 	public Socket getSocket() {
 		return socket;
+	}
+	
+	public int getSleepTime() {
+		return sleepTime;
+	}
+	public void setSleepTime(int sleepTime) {
+		this.sleepTime = sleepTime;
 	}
 }
