@@ -3,6 +3,7 @@ package net.jfabricationgames.jfgserver.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
@@ -32,6 +33,7 @@ public abstract class JFGServer {
 	 */
 	public JFGServer(int port) {
 		this.port = port;
+		connections = new ArrayList<JFGConnection>();
 		chooseInterpreter();
 	}
 	

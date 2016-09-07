@@ -47,8 +47,8 @@ public class JFGConnection implements Runnable {
 	public JFGConnection(JFGServer server, Socket socket) throws IOException {
 		this.server = server;
 		this.socket = socket;
-		serverIn = new ObjectInputStream(socket.getInputStream());
 		serverOut = new ObjectOutputStream(socket.getOutputStream());
+		serverIn = new ObjectInputStream(socket.getInputStream());
 	}
 	/**
 	 * Create a new JFGConnection and pass on the server and the connected socket and an interpreter.

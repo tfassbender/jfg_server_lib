@@ -158,8 +158,8 @@ public class JFGClient implements Runnable {
 	 */
 	private void createClient() throws IOException {
 		socket = new Socket(host, port);
-		clientIn = new ObjectInputStream(socket.getInputStream());
 		clientOut = new ObjectOutputStream(socket.getOutputStream());
+		clientIn = new ObjectInputStream(socket.getInputStream());
 	}
 	
 	/**
@@ -168,7 +168,7 @@ public class JFGClient implements Runnable {
 	 * @param message
 	 * 		The message send to the server.
 	 */
-	public void sendMessage(JFGClientMessage message) {
+	public void sendMessage(JFGServerMessage message) {
 		try {
 			clientOut.writeObject(message);
 			clientOut.flush();
