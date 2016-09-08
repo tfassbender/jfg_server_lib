@@ -19,6 +19,11 @@ public interface JFGConnectionGroup {
 	public JFGConnectionGroup getInstance(List<JFGConnection> connections);
 	
 	/**
+	 * Inform the clients of this group that the group was created and can be used now.
+	 */
+	public void groupStarted();
+	
+	/**
 	 * Send a broadcast message to all connections in this group.
 	 * 
 	 * @param message

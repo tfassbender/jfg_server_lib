@@ -21,12 +21,20 @@ public class DefaultJFGConnectionGroup implements JFGConnectionGroup {
 	}
 	private DefaultJFGConnectionGroup(List<JFGConnection> connections) {
 		this.connections = connections;
+		groupStarted();
 	}
 	
 	@Override
 	public JFGConnectionGroup getInstance(List<JFGConnection> connections) {
 		DefaultJFGConnectionGroup group = new DefaultJFGConnectionGroup(connections);
 		return group;
+	}
+	
+	@Override
+	public void groupStarted() {
+		DefaultJFGMessage message = new DefaultJFGMessage();
+		message.setMessage("Group Started");
+		sendGroupBroadcast(message);
 	}
 	
 	@Override
