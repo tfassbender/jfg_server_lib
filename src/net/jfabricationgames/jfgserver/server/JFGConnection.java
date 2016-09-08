@@ -1,9 +1,11 @@
 package net.jfabricationgames.jfgserver.server;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 import net.jfabricationgames.jfgserver.client.JFGClientMessage;
 import net.jfabricationgames.jfgserver.client.JFGServerMessage;
@@ -94,6 +96,9 @@ public class JFGConnection implements Runnable {
 				}
 				Thread.sleep(sleepTime);
 			}
+		}
+		catch (SocketException | EOFException e) {
+			//occurs when the connection is closed by the client and the server tries to read/write from/to the connection.
 		}
 		catch (IOException ioe) {
 			ioe.printStackTrace();

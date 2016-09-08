@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 import net.jfabricationgames.jfgserver.interpreter.JFGClientInterpreter;
 
@@ -119,6 +120,9 @@ public class JFGClient implements Runnable {
 				}
 				Thread.sleep(sleepTime);
 			}
+		}
+		catch (SocketException se) {
+			//occurs when the connection is closed and the thread tries to read.
 		}
 		catch (IOException ioe) {
 			ioe.printStackTrace();
