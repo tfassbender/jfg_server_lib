@@ -19,14 +19,14 @@ public class JFGLoginServer extends JFGServer {
 	
 	private List<JFGConnectionGroup> groups;
 	
-	private JFGConnectionGroup connectionGroup;
+	private JFGConnectionGroup groupFactory;
 	
 	private List<JFGConnection> waitingConnections;
 
 	public JFGLoginServer(int port) {
 		super(port);
 		groups = new ArrayList<JFGConnectionGroup>();
-		connectionGroup = new DefaultJFGConnectionGroup();
+		groupFactory = new DefaultJFGConnectionGroup();
 	}
 
 	@Override
@@ -127,9 +127,10 @@ public class JFGLoginServer extends JFGServer {
 	 * @param connections
 	 * 		The connections that are added to a group.
 	 */
-	public void createGroup(List<JFGConnection> connections) {
-		JFGConnectionGroup group = connectionGroup.getInstance(connections);
+	public JFGConnectionGroup createGroup(List<JFGConnection> connections) {
+		JFGConnectionGroup group = groupFactory.getInstance(connections);
 		groups.add(group);
+		return group;
 	}
 	
 	/**
@@ -163,5 +164,12 @@ public class JFGLoginServer extends JFGServer {
 		for (JFGConnection con : connections) {
 			con.sendMessage(message);
 		}
+	}
+	
+	public JFGConnectionGroup getGroupFactory() {
+		return groupFactory;
+	}
+	public void setGroupFactory(JFGConnectionGroup groupFactory) {
+		this.groupFactory = groupFactory;
 	}
 }
