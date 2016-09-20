@@ -26,6 +26,7 @@ public class JFGLoginServer extends JFGServer {
 	public JFGLoginServer(int port) {
 		super(port);
 		groups = new ArrayList<JFGConnectionGroup>();
+		waitingConnections = new ArrayList<JFGConnection>();
 		groupFactory = new DefaultJFGConnectionGroup();
 	}
 
@@ -57,7 +58,7 @@ public class JFGLoginServer extends JFGServer {
 					sendBroadcast((JFGClientMessage) message);
 				}
 				else {
-					System.err.println("JFGLoginServer: Couldn't repeat. Message doesn't implement JFGClientMessage");
+					JFGServer.printError("JFGLoginServer: Couldn't repeat. Message doesn't implement JFGClientMessage", JFGServer.ERROR_LEVEL_DEBUG);
 				}
 			}
 			else {

@@ -92,22 +92,23 @@ public class JFGConnection implements Runnable {
 					interpreter.interpreteServerMessage((JFGServerMessage) clientRequest, this);
 				}
 				else {
-					System.err.println("JFGConnection: Received object is no JFGServerMessage. Couldn't interprete the message.");
+					JFGServer.printError("JFGConnection: Received object is no JFGServerMessage. Couldn't interprete the message.", JFGServer.ERROR_LEVEL_DEBUG);
 				}
 				Thread.sleep(sleepTime);
 			}
 		}
 		catch (SocketException | EOFException e) {
 			//occurs when the connection is closed by the client and the server tries to read/write from/to the connection.
+			JFGServer.printError(e, JFGServer.ERROR_LEVEL_INFO);
 		}
 		catch (IOException ioe) {
-			ioe.printStackTrace();
+			JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_ERROR);
 		}
 		catch (InterruptedException ie) {
-			//ie.printStackTrace();
+			JFGServer.printError(ie, JFGServer.ERROR_LEVEL_ALL);
 		}
 		catch (ClassNotFoundException cnfe) {
-			cnfe.printStackTrace();
+			JFGServer.printError(cnfe, JFGServer.ERROR_LEVEL_DEBUG);
 		}
 	}
 	
@@ -135,14 +136,14 @@ public class JFGConnection implements Runnable {
 			serverOut.close();
 		}
 		catch (IOException ioe) {
-			ioe.printStackTrace();
+			JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_DEBUG);
 		}
 		//Try to close the socket separately
 		try {
 			socket.close();
 		}
 		catch (IOException ioe) {
-			ioe.printStackTrace();
+			JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_DEBUG);
 		}
 		server.removeConnection(this);
 	}
@@ -159,7 +160,7 @@ public class JFGConnection implements Runnable {
 			serverOut.flush();
 		}
 		catch (IOException ie) {
-			ie.printStackTrace();
+			JFGServer.printError(ie, JFGServer.ERROR_LEVEL_INFO);
 		}
 	}
 	

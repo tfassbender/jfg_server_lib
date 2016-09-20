@@ -25,6 +25,14 @@ public abstract class JFGServer {
 	private ServerSocket serverSocket;
 	private Thread serverThread;
 	
+	public static final int ERROR_LEVEL_NONE = 1;
+	public static final int ERROR_LEVEL_ERROR = 2;
+	public static final int ERROR_LEVEL_INFO = 3;
+	public static final int ERROR_LEVEL_DEBUG = 4;
+	public static final int ERROR_LEVEL_ALL = 5;
+	
+	private static int errorLevel = ERROR_LEVEL_ERROR;
+	
 	/**
 	 * Create a new JFGServer listening on a port.
 	 * 
@@ -65,13 +73,13 @@ public abstract class JFGServer {
 							addConnection(connection);
 						}
 						catch (IOException ioe) {
-							ioe.printStackTrace();
+							JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_ERROR);
 						}
 						Thread.sleep(10);
 					}
 				}
 				catch (InterruptedException ie) {
-					;
+					JFGServer.printError(ie, JFGServer.ERROR_LEVEL_ALL);
 				}
 			}
 		});
@@ -87,7 +95,7 @@ public abstract class JFGServer {
 			serverSocket.close();
 		}
 		catch (IOException ioe) {
-			ioe.printStackTrace();
+			JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_ERROR);
 		}
 	}
 	
@@ -140,6 +148,42 @@ public abstract class JFGServer {
 	public void closeConnection(JFGConnection con) {
 		con.endConnection();
 		connections.remove(con);
+	}
+	
+	/**
+	 * Print the stack trace of the error if this error is shown at the current ERROR_LEVEL.
+	 * 
+	 * @param e
+	 * 		The exception that was caught.
+	 * 
+	 * @param level
+	 * 		The level of the exception.
+	 */
+	public static void printError(Exception e, int level) {
+		if (errorLevel >= level && level > ERROR_LEVEL_NONE) {
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * Print an error message if this error is shown at the current ERROR_LEVEL.
+	 * 
+	 * @param s
+	 * 		The error message.
+	 * 
+	 * @param level
+	 * 		The level of the error.
+	 */
+	public static void printError(String s, int level) {
+		if (errorLevel >= level && level > ERROR_LEVEL_NONE) {
+			System.err.println(s);
+		}
+	}
+	
+	public static int getErrorLevel() {
+		return errorLevel;
+	}
+	public static void setErrorLevel(int errorLevel) {
+		JFGServer.errorLevel = errorLevel;
 	}
 	
 	public JFGServerInterpreter getInterpreterFactory() {

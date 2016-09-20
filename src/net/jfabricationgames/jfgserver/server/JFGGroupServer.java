@@ -63,11 +63,11 @@ public class JFGGroupServer extends JFGServer {
 					group.sendGroupBroadcast((JFGClientMessage) message);
 				}
 				else {
-					System.err.println("JFGGroupServer: Couldn't send broadcast. The connection has no group.");
+					JFGServer.printError("JFGGroupServer: Couldn't send broadcast. The connection has no group.", JFGServer.ERROR_LEVEL_DEBUG);
 				}
 			}
 			else {
-				System.err.println("JFGGroupServer: Couldn't repeat. Message doesn't implement JFGClientMessage.");
+				JFGServer.printError("JFGGroupServer: Couldn't repeat. Message doesn't implement JFGClientMessage.", JFGServer.ERROR_LEVEL_DEBUG);
 			}
 		}
 

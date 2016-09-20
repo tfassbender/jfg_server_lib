@@ -47,7 +47,7 @@ public class JFGBroadcastServer extends JFGServer {
 				sendBroadcast((JFGClientMessage) message);
 			}
 			else {
-				System.err.println("JFGBroadcastServer: Couldn't repeat. Message doesn't implement JFGClientMessage");
+				JFGServer.printError("JFGBroadcastServer: Couldn't repeat. Message doesn't implement JFGClientMessage", JFGServer.ERROR_LEVEL_DEBUG);
 			}
 		}
 		

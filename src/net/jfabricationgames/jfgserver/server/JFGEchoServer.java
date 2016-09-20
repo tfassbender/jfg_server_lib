@@ -45,7 +45,7 @@ public class JFGEchoServer extends JFGServer {
 				connection.sendMessage((JFGClientMessage) message);
 			}
 			else {
-				System.err.println("JFGEchoServer: Couldn't repeat. Message doesn't implement JFGClientMessage");
+				JFGServer.printError("JFGEchoServer: Couldn't repeat. Message doesn't implement JFGClientMessage", JFGServer.ERROR_LEVEL_DEBUG);
 			}
 		}
 		
