@@ -31,7 +31,7 @@ public abstract class JFGServer {
 	public static final int ERROR_LEVEL_DEBUG = 4;
 	public static final int ERROR_LEVEL_ALL = 5;
 	
-	private static int errorLevel = ERROR_LEVEL_ERROR;
+	protected static int errorLevel = ERROR_LEVEL_ERROR;
 	
 	/**
 	 * Create a new JFGServer listening on a port.

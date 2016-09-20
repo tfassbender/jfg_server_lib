@@ -3,6 +3,7 @@ package jfgServerExample.basicExample;
 import java.io.IOException;
 
 import net.jfabricationgames.jfgserver.server.JFGEchoServer;
+import net.jfabricationgames.jfgserver.server.JFGServer;
 
 public class ServerMainExample {
 	
@@ -32,6 +33,13 @@ public class ServerMainExample {
 		
 		//if you need to create your own interpreter for just echoing messages you could also create your own implementation
 		//of the JFGServer class. But changing the echo server would be okay too.
+		
+		//if you try to debug your application it could be useful to see all the errors on the server. Or if you want to run
+		//a stable version you don't want to see to many errors.
+		//therefore you can set the error level of the server to what's needed by setting it with the 
+		//JFGServer.setErrorLevel(int) method.
+		JFGServer.setErrorLevel(JFGServer.ERROR_LEVEL_ALL);//shows all occurring errors
+		//the default setting is JFGServer.ERROR_LEVEL_ERROR which shows only relevant errors.
 		
 		//after the server has the right interpreter it just needs to be started:
 		try {
