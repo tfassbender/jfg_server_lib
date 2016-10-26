@@ -183,6 +183,18 @@ public class JFGClient implements Runnable {
 	}
 	
 	/**
+	 * Reset the ouput stream to prevent sending the same reference of an object with a changed state.
+	 */
+	public void resetOutput() {
+		try {
+			clientOut.reset();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
 	 * Close the streams and end the connection.
 	 */
 	public void closeConnection() {

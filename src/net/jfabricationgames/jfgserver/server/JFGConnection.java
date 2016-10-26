@@ -164,6 +164,18 @@ public class JFGConnection implements Runnable {
 		}
 	}
 	
+	/**
+	 * Reset the ouput stream to prevent sending the same reference of an object with a changed state.
+	 */
+	public void resetOutput() {
+		try {
+			serverOut.reset();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public JFGConnectionGroup getGroup() {
 		return group;
 	}
