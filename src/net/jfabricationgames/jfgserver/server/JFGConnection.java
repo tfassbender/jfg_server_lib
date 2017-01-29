@@ -31,6 +31,8 @@ public class JFGConnection implements Runnable {
 	private JFGConnectionGroup group;
 	private JFGServerInterpreter interpreter;
 	
+	private static boolean resetBeforeSending = false;
+	
 	/**
 	 * Create a new JFGConnection and pass on the server and the connected socket.
 	 * The connection doensn't contain a {@link JFGServerInterpreter} and for this reason it's not started directly.
@@ -156,7 +158,25 @@ public class JFGConnection implements Runnable {
 	 */
 	public void sendMessage(JFGClientMessage message) {
 		try {
+			if (resetBeforeSending) {
+				resetOutput();
+			}
 			serverOut.writeObject(message);
+			serverOut.flush();
+		}
+		catch (IOException ie) {
+			JFGServer.printError(ie, JFGServer.ERROR_LEVEL_INFO);
+		}
+	}
+	/**
+	 * Send a message to the client connected to this JFGConnection using the writeUnshared method.
+	 * 
+	 * @param message
+	 * 		The message to send to the client.
+	 */
+	public void sendMessageUnshared(JFGClientMessage message) {
+		try {
+			serverOut.writeUnshared(message);
 			serverOut.flush();
 		}
 		catch (IOException ie) {
@@ -204,6 +224,26 @@ public class JFGConnection implements Runnable {
 	}
 	public Socket getSocket() {
 		return socket;
+	}
+	
+	/**
+	 * Indicates whether the output is reseted before every sent message.
+	 * The output is only reseted before a normal write. Not an unshared write.
+	 * 
+	 * @return
+	 * 		Returns true if the output is set to reset before sending.
+	 */
+	public static boolean isResetBeforeSending() {
+		return resetBeforeSending;
+	}
+	/**
+	 * Set to reset the stream before sending any new objects on all connections.
+	 * 
+	 * @param resetBeforeSending
+	 * 		Set the reset on or off.
+	 */
+	public static void setResetBeforeSending(boolean resetBeforeSending) {
+		JFGConnection.resetBeforeSending = resetBeforeSending;
 	}
 	
 	public int getSleepTime() {

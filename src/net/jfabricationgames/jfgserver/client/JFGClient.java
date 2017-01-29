@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.SocketException;
 
 import net.jfabricationgames.jfgserver.interpreter.JFGClientInterpreter;
+import net.jfabricationgames.jfgserver.server.JFGServer;
 
 /**
  * The JFGClient is used to create a connection to the server and send messages to the server or other connected clients.
@@ -28,6 +29,8 @@ public class JFGClient implements Runnable {
 	
 	private static String defaultHost = "jfabricationgames.ddns.net";
 	private static int defaultPort = -1;
+	
+	private static boolean resetBeforeSending = false;
 	
 	/**
 	 * Create a new JFGClient connected to a host on a port and add an interpreter to the client.
@@ -174,11 +177,29 @@ public class JFGClient implements Runnable {
 	 */
 	public void sendMessage(JFGServerMessage message) {
 		try {
+			if (resetBeforeSending) {
+				resetOutput();
+			}
 			clientOut.writeObject(message);
 			clientOut.flush();
 		}
 		catch (IOException ie) {
 			ie.printStackTrace();
+		}
+	}
+	/**
+	 * Send a message to the server connected to this JFGClient using the writeUnshared method.
+	 * 
+	 * @param message
+	 * 		The message to send to the server.
+	 */
+	public void sendMessageUnshared(JFGServer message) {
+		try {
+			clientOut.writeUnshared(message);
+			clientOut.flush();
+		}
+		catch (IOException ie) {
+			JFGServer.printError(ie, JFGServer.ERROR_LEVEL_INFO);
 		}
 	}
 	
@@ -256,5 +277,25 @@ public class JFGClient implements Runnable {
 	 */
 	public void setSleepTime(int sleepTime) {
 		this.sleepTime = sleepTime;
+	}
+	
+	/**
+	 * Indicates whether the output is reseted before every sent message.
+	 * The output is only reseted before a normal write. Not an unshared write.
+	 * 
+	 * @return
+	 * 		Returns true if the output is set to reset before sending.
+	 */
+	public static boolean isResetBeforeSending() {
+		return resetBeforeSending;
+	}
+	/**
+	 * Set to reset the stream before sending any new objects on all connections.
+	 * 
+	 * @param resetBeforeSending
+	 * 		Set the reset on or off.
+	 */
+	public static void setResetBeforeSending(boolean resetBeforeSending) {
+		JFGClient.resetBeforeSending = resetBeforeSending;
 	}
 }
