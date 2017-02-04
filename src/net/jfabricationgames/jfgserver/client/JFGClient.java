@@ -193,7 +193,7 @@ public class JFGClient implements Runnable {
 	 * @param message
 	 * 		The message to send to the server.
 	 */
-	public void sendMessageUnshared(JFGServer message) {
+	public void sendMessageUnshared(JFGServerMessage message) {
 		try {
 			clientOut.writeUnshared(message);
 			clientOut.flush();
