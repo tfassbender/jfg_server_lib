@@ -192,7 +192,7 @@ public class JFGConnection implements Runnable {
 			serverOut.reset();
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			JFGServer.printError(e, JFGServer.ERROR_LEVEL_INFO);
 		}
 	}
 	

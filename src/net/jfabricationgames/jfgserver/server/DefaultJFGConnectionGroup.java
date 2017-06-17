@@ -19,7 +19,7 @@ public class DefaultJFGConnectionGroup implements JFGConnectionGroup {
 	public DefaultJFGConnectionGroup() {
 		
 	}
-	private DefaultJFGConnectionGroup(List<JFGConnection> connections) {
+	public DefaultJFGConnectionGroup(List<JFGConnection> connections) {
 		this.connections = connections;
 		groupStarted();
 	}
