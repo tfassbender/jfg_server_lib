@@ -81,6 +81,23 @@ public class JFGConnection implements Runnable {
 		serverOut = new ObjectOutputStream(socket.getOutputStream());
 		startConnection();
 	}
+
+	/**
+	 * Create a new JFGConnection from another connection by cloning it.
+	 * 
+	 * @param connection
+	 * 		The connection that is cloned.
+	 */
+	public JFGConnection(JFGConnection connection) {
+		this.server = connection.server;
+		this.socket = connection.socket;
+		this.serverIn = connection.serverIn;
+		this.serverOut = connection.serverOut;
+		this.connection = connection.connection;
+		this.sleepTime = connection.sleepTime;
+		this.group = connection.group;
+		this.interpreter = connection.interpreter;
+	}
 	
 	/**
 	 * The run method from {@link Runnable} to make the connection listen to the clients inputs in a different thread.
@@ -91,7 +108,7 @@ public class JFGConnection implements Runnable {
 			while (true) {
 				Object clientRequest = serverIn.readObject();
 				if (clientRequest instanceof JFGServerMessage) {
-					interpreter.interpreteServerMessage((JFGServerMessage) clientRequest, this);
+					receiveMessage((JFGServerMessage) clientRequest);
 				}
 				else {
 					JFGServer.printError("JFGConnection: Received object is no JFGServerMessage. Couldn't interprete the message.", JFGServer.ERROR_LEVEL_DEBUG);
@@ -112,6 +129,16 @@ public class JFGConnection implements Runnable {
 		catch (ClassNotFoundException cnfe) {
 			JFGServer.printError(cnfe, JFGServer.ERROR_LEVEL_DEBUG);
 		}
+	}
+	
+	/**
+	 * Receive a message that was sent to the socket of this server.
+	 * 
+	 * @param message
+	 * 		The message that was sent.
+	 */
+	public void receiveMessage(JFGServerMessage message) {
+		interpreter.interpreteServerMessage(message, this);
 	}
 	
 	/**

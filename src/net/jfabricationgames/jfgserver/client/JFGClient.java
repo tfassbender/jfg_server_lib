@@ -108,6 +108,23 @@ public class JFGClient implements Runnable {
 	}
 	
 	/**
+	 * Create a new JFGClient from another client by cloning it.
+	 * 
+	 * @param client
+	 * 		The client that is cloned.
+	 */
+	public JFGClient(JFGClient client) {
+		this.clientIn = client.clientIn;
+		this.clientOut = client.clientOut;
+		this.socket = client.socket;
+		this.clientInterpreter = client.clientInterpreter;
+		this.connection = client.connection;
+		this.sleepTime = client.sleepTime;
+		this.host = client.host;
+		this.port = client.port;
+	}
+	
+	/**
 	 * The run method from {@link Runnable} to read the incoming messages from the server and pass them on to the interpreter.
 	 */
 	@Override
@@ -116,7 +133,7 @@ public class JFGClient implements Runnable {
 			while (true) {
 				Object clientRequest = clientIn.readObject();
 				if (clientRequest instanceof JFGClientMessage) {
-					clientInterpreter.interpreteClientMessage((JFGClientMessage) clientRequest, this);
+					receiveMessage((JFGClientMessage) clientRequest);
 				}
 				else {
 					System.err.println("JFGClient: Received object is no JFGClientMessage. Couldn't interprete the message.");
@@ -201,6 +218,16 @@ public class JFGClient implements Runnable {
 		catch (IOException ie) {
 			JFGServer.printError(ie, JFGServer.ERROR_LEVEL_INFO);
 		}
+	}
+	
+	/**
+	 * Receive a message that was sent to the socket of this client.
+	 * 
+	 * @param message
+	 * 		The message that was sent.
+	 */
+	public void receiveMessage(JFGClientMessage message) {
+		clientInterpreter.interpreteClientMessage(message, this);
 	}
 	
 	/**
