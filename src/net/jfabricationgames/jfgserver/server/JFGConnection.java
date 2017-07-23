@@ -100,6 +100,13 @@ public class JFGConnection implements Runnable {
 	}
 	
 	/**
+	 * Create a new JFGConnection without a server, a socket or an interpreter to be used as factory.
+	 */
+	public JFGConnection() {
+		
+	}
+	
+	/**
 	 * The run method from {@link Runnable} to make the connection listen to the clients inputs in a different thread.
 	 */
 	@Override
@@ -129,6 +136,25 @@ public class JFGConnection implements Runnable {
 		catch (ClassNotFoundException cnfe) {
 			JFGServer.printError(cnfe, JFGServer.ERROR_LEVEL_DEBUG);
 		}
+	}
+	
+	/**
+	 * Create a new instance of the JFGConnection as factory instance for the server.
+	 * 
+	 * @param server
+	 * 		The server that created the JFGConnection.
+	 * 
+	 * @param socket
+	 * 		The socket the JFGConnection is connected to.
+	 * 
+	 * @return
+	 * 		The new created instance of the JFGConnection.
+	 * 
+	 * @throws IOException
+	 * 		An IOException is thrown if the in-/out-streams couldn't be created for some reason.
+	 */
+	public JFGConnection getInstance(JFGServer server, Socket socket) throws IOException {
+		return new JFGConnection(server, socket);
 	}
 	
 	/**

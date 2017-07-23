@@ -21,6 +21,7 @@ public abstract class JFGServer {
 	protected int port;
 	protected List<JFGConnection> connections;
 	protected JFGServerInterpreter interpreterFactory;
+	protected JFGConnection connectionFactory;
 	
 	private ServerSocket serverSocket;
 	private Thread serverThread;
@@ -42,6 +43,7 @@ public abstract class JFGServer {
 	public JFGServer(int port) {
 		this.port = port;
 		connections = new ArrayList<JFGConnection>();
+		connectionFactory = new JFGConnection();//use JFGConnection as default.
 		chooseInterpreter();
 	}
 	
@@ -68,7 +70,7 @@ public abstract class JFGServer {
 					while (true) {
 						try {
 							Socket connectionSocket = serverSocket.accept();
-							JFGConnection connection = new JFGConnection(JFGServer.this, connectionSocket);
+							JFGConnection connection = connectionFactory.getInstance(JFGServer.this, connectionSocket);
 							addInterpreter(connection);
 							addConnection(connection);
 						}
@@ -105,6 +107,16 @@ public abstract class JFGServer {
 	 * The factory implementation, that is used, is to be created and added using the setInterpreterFactory() method.
 	 */
 	public abstract void chooseInterpreter();
+	
+	/**
+	 * Set the connection factory to create connections of subclasses of JFGConnection.
+	 * 
+	 * @param connectionFactory
+	 * 		The factory to be used to create new connections (no fields or connections are needed in this factory).
+	 */
+	public void setConnectionFactory(JFGConnection connectionFactory) {
+		this.connectionFactory = connectionFactory;
+	}
 	
 	/**
 	 * Add a new instance of the JFGServerInterpreter, created from the factory, to the new connection.
