@@ -62,9 +62,9 @@ public class JFGCommunicationSecurity {
 			JFGSecurableMessage msg = (JFGSecurableMessage) message;
 			securedMessages.put(msg.getMessageId(), message);
 			messageTimers.put(msg.getMessageId(), 0);
-			System.out.println("Sending secured message (id: " + msg.getMessageId() + ")");
+			//System.out.println("Sending secured message (id: " + msg.getMessageId() + ")");
 		}
-		else {
+		else if (!(message instanceof JFGAcknowledgeMessage)) {
 			throw new JFGSecureCommunicationException("The message sent can't be secured because it doesn't implement SecurableMessage.");
 		}
 	}
@@ -81,7 +81,7 @@ public class JFGCommunicationSecurity {
 			messageTimers.remove(ackId);
 			securedMessages.remove(ackId);
 		}
-		System.out.println("Acknowledgement received (id: " + ackId + ")");
+		//System.out.println("Acknowledgement received (id: " + ackId + ")");
 	}
 	
 	/**
@@ -127,7 +127,7 @@ public class JFGCommunicationSecurity {
 			else {
 				connection.sendMessage(ackMessage);
 			}
-			System.out.println("Sending acknowledgement (id: " + msg.getMessageId() + ")");
+			//System.out.println("Sending acknowledgement (id: " + msg.getMessageId() + ")");
 		}
 	}
 	
