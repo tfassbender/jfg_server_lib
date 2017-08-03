@@ -176,20 +176,20 @@ public class JFGCommunicationSecurity {
 									resendMessage(messageId);
 								}
 							}
-						}
-						Integer removedMessage = null;
-						for (int messageId : receivedMessageTimer.keySet()) {
-							int timer = messageTimers.get(messageId);
-							if (timer >= STORE_RECEIVED_MESSAGES) {
-								removedMessage = messageId;
+							Integer removedMessage = null;
+							for (int messageId : receivedMessageTimer.keySet()) {
+								int timer = messageTimers.get(messageId);
+								if (timer >= STORE_RECEIVED_MESSAGES) {
+									removedMessage = messageId;
+								}
+								else {
+									messageTimers.put(messageId, timer+1);
+								}
 							}
-							else {
-								messageTimers.put(messageId, timer+1);
+							if (removedMessage != null) {
+								receivedMessageTimer.remove(removedMessage);
+								receivedMessages.remove(removedMessage);
 							}
-						}
-						if (removedMessage != null) {
-							receivedMessageTimer.remove(removedMessage);
-							receivedMessages.remove(removedMessage);
 						}
 						Thread.sleep(1000);
 					}
