@@ -1,5 +1,7 @@
 package net.jfabricationgames.jfgserver.secured_message;
 
+import java.io.IOException;
+
 import net.jfabricationgames.jfgserver.client.JFGClient;
 import net.jfabricationgames.jfgserver.client.JFGClientMessage;
 import net.jfabricationgames.jfgserver.client.JFGServerMessage;
@@ -93,6 +95,36 @@ public class JFGSecureMessageClient extends JFGClient {
 	public void sendMessageUnshared(JFGServerMessage message) {
 		communicationSecurity.secureMessage(message);
 		super.sendMessageUnshared(message);
+	}
+	
+	/**
+	 * Overrides the run method from JFGClient to not stop reading when an exception occurs.
+	 */
+	@Override
+	public void run() {
+		try {
+			while (true) {
+				try {
+					Object clientRequest = clientIn.readObject();
+					if (clientRequest instanceof JFGClientMessage) {
+						receiveMessage((JFGClientMessage) clientRequest);
+					}
+					else {
+						System.err.println("JFGClient: Received object is no JFGClientMessage. Couldn't interprete the message.");
+					}
+				}
+				catch (IOException ioe) {
+					ioe.printStackTrace();
+				}
+				Thread.sleep(sleepTime);
+			}
+		}
+		catch (InterruptedException ie) {
+			//ie.printStackTrace();
+		}
+		catch (ClassNotFoundException cnfe) {
+			cnfe.printStackTrace();
+		}
 	}
 	
 	/**

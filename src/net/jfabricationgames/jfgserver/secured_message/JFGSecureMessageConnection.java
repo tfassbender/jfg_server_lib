@@ -1,7 +1,9 @@
 package net.jfabricationgames.jfgserver.secured_message;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 
 import net.jfabricationgames.jfgserver.client.JFGClientMessage;
 import net.jfabricationgames.jfgserver.client.JFGServerMessage;
@@ -69,6 +71,42 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	 */
 	public JFGSecureMessageConnection() {
 		super();
+	}
+	
+	/**
+	 * The run method from {@link Runnable} to make the connection listen to the clients inputs in a different thread.
+	 * 
+	 * Overrides the run method from JFGConnection to not stop reading when an exception occurs.
+	 */
+	@Override
+	public void run() {
+		try {
+			while (true) {
+				try {
+					Object clientRequest = serverIn.readObject();
+					if (clientRequest instanceof JFGServerMessage) {
+						receiveMessage((JFGServerMessage) clientRequest);
+					}
+					else {
+						JFGServer.printError("JFGConnection: Received object is no JFGServerMessage. Couldn't interprete the message.", JFGServer.ERROR_LEVEL_DEBUG);
+					}
+				}
+				catch (SocketException | EOFException e) {
+					//occurs when the connection is closed by the client and the server tries to read/write from/to the connection.
+					JFGServer.printError(e, JFGServer.ERROR_LEVEL_INFO);
+				}
+				catch (IOException ioe) {
+					JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_ERROR);
+				}				
+				Thread.sleep(sleepTime);
+			}
+		}
+		catch (InterruptedException ie) {
+			JFGServer.printError(ie, JFGServer.ERROR_LEVEL_ALL);
+		}
+		catch (ClassNotFoundException cnfe) {
+			JFGServer.printError(cnfe, JFGServer.ERROR_LEVEL_DEBUG);
+		}
 	}
 	
 	/**

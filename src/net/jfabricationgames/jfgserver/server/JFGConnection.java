@@ -19,17 +19,17 @@ import net.jfabricationgames.jfgserver.interpreter.JFGServerInterpreter;
  */
 public class JFGConnection implements Runnable {
 	
-	private JFGServer server;
+	protected JFGServer server;
 	private Socket socket;
 	
-	private ObjectInputStream serverIn;
-	private ObjectOutputStream serverOut;
+	protected ObjectInputStream serverIn;
+	protected ObjectOutputStream serverOut;
 	
 	private Thread connection;
-	private int sleepTime = 100;
+	protected int sleepTime = 100;
 	
-	private JFGConnectionGroup group;
-	private JFGServerInterpreter interpreter;
+	protected JFGConnectionGroup group;
+	protected JFGServerInterpreter interpreter;
 	
 	private static boolean resetBeforeSending = false;
 	

@@ -14,23 +14,23 @@ import net.jfabricationgames.jfgserver.server.JFGServer;
  */
 public class JFGClient implements Runnable {
 	
-	private ObjectInputStream clientIn;
-	private ObjectOutputStream clientOut;
+	protected ObjectInputStream clientIn;
+	protected ObjectOutputStream clientOut;
 	
 	private Socket socket;
 	
 	private JFGClientInterpreter clientInterpreter;
 	
 	private Thread connection;
-	private int sleepTime;
+	protected int sleepTime;
 	
-	private String host;
-	private int port;
+	protected String host;
+	protected int port;
 	
-	private static String defaultHost = "jfabricationgames.ddns.net";
-	private static int defaultPort = -1;
+	protected static String defaultHost = "jfabricationgames.ddns.net";
+	protected static int defaultPort = -1;
 	
-	private static boolean resetBeforeSending = false;
+	protected static boolean resetBeforeSending = false;
 	
 	/**
 	 * Create a new JFGClient connected to a host on a port and add an interpreter to the client.
