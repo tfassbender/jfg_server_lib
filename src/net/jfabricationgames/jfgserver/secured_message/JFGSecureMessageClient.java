@@ -78,7 +78,8 @@ public class JFGSecureMessageClient extends JFGClient {
 	 * 		The secure client that is cloned.
 	 */
 	public JFGSecureMessageClient(JFGSecureMessageClient client) {
-		
+		super(client);
+		communicationSecurity = client.communicationSecurity;
 	}
 	
 	/**
