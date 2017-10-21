@@ -54,7 +54,7 @@ public class JFGSecureMessageConnection extends JFGConnection {
 		super(server, socket, interpreter);
 		communicationSecurity = new JFGCommunicationSecurity(this);
 	}
-
+	
 	/**
 	 * Create a new JFGSecureMessageConnection from another connection by cloning it.
 	 * 
@@ -64,6 +64,17 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	public JFGSecureMessageConnection(JFGConnection connection) {
 		super(connection);
 		communicationSecurity = new JFGCommunicationSecurity(this);
+	}
+	
+	/**
+	 * Create a new JFGSecureMessageConnection from another JFGSecureMessageConnection by cloning it.
+	 * 
+	 * @param connection
+	 * 		The secure connection that is cloned.
+	 */
+	public JFGSecureMessageConnection(JFGSecureMessageConnection connection) {
+		super(connection);
+		communicationSecurity = connection.communicationSecurity;
 	}
 	
 	/**

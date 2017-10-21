@@ -71,6 +71,15 @@ public class JFGSecureMessageClient extends JFGClient {
 		super();
 		communicationSecurity = new JFGCommunicationSecurity(this);
 	}
+	/**
+	 * Create a new JFGSecureMessageClient by cloning another secure message client.
+	 * 
+	 * @param client
+	 * 		The secure client that is cloned.
+	 */
+	public JFGSecureMessageClient(JFGSecureMessageClient client) {
+		
+	}
 	
 	/**
 	 * Send a secured message to the server and check it's arrival.
