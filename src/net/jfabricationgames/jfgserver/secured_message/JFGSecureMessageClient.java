@@ -1,5 +1,6 @@
 package net.jfabricationgames.jfgserver.secured_message;
 
+import java.io.EOFException;
 import java.io.IOException;
 
 import net.jfabricationgames.jfgserver.client.JFGClient;
@@ -122,6 +123,9 @@ public class JFGSecureMessageClient extends JFGClient {
 					else {
 						System.err.println("JFGClient: Received object is no JFGClientMessage. Couldn't interprete the message.");
 					}
+				}
+				catch (EOFException eofe) {
+					//eofe.printStackTrace();
 				}
 				catch (IOException ioe) {
 					ioe.printStackTrace();
