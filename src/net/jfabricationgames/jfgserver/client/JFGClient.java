@@ -161,7 +161,7 @@ public class JFGClient implements Runnable {
 	 * @throws IllegalArgumentException
 	 * 		An {@link IllegalArgumentException} is thrown if the client is already started.
 	 */
-	private void startClient() throws IllegalArgumentException {
+	protected void startClient() throws IllegalArgumentException {
 		if (clientInterpreter == null) {
 			throw new IllegalArgumentException("Client can't be started without a JFGClientInterpreter.");
 		}
@@ -261,6 +261,7 @@ public class JFGClient implements Runnable {
 		catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
+		connection = null;
 	}
 	
 	/**

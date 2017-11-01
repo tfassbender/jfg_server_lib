@@ -2,6 +2,7 @@ package net.jfabricationgames.jfgserver.secured_message;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.net.Socket;
 import java.net.SocketException;
 
@@ -102,6 +103,10 @@ public class JFGSecureMessageConnection extends JFGConnection {
 						JFGServer.printError("JFGConnection: Received object is no JFGServerMessage. Couldn't interprete the message.", JFGServer.ERROR_LEVEL_DEBUG);
 					}
 				}
+				catch (StreamCorruptedException sce) {
+					sce.printStackTrace();
+					relogin();
+				}
 				catch (SocketException | EOFException e) {
 					//occurs when the connection is closed by the client and the server tries to read/write from/to the connection.
 					JFGServer.printError(e, JFGServer.ERROR_LEVEL_INFO);
@@ -175,5 +180,13 @@ public class JFGSecureMessageConnection extends JFGConnection {
 			}
 			communicationSecurity.sendAcknowledge(message);
 		}
+	}
+	
+	/**
+	 * Send a request to the client to re-login into the server.
+	 */
+	private void relogin() {
+		JFGReloginMessage reloginMessage = new JFGReloginMessage(JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST);
+		sendMessage(reloginMessage);
 	}
 }

@@ -159,7 +159,7 @@ public abstract class JFGServer {
 	 */
 	public void closeConnection(JFGConnection con) {
 		con.endConnection();
-		connections.remove(con);
+		removeConnection(con);
 	}
 	
 	/**

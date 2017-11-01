@@ -110,6 +110,18 @@ public class JFGLoginServer extends JFGServer {
 	}
 	
 	/**
+	 * Remove a connection from the waiting list without closing the connection.
+	 * 
+	 * This method is primary called by the (subclass) JFGSecureLoginServer for the re-login of an already known user.
+	 * 
+	 * @param connection
+	 * 		The connection to remove from the waiting list.
+	 */
+	protected void removeWaiting(JFGConnection connection) {
+		waitingConnections.remove(connection);
+	}
+	
+	/**
 	 * Check whether a connection is logged in on the server.
 	 * 
 	 * @param connection

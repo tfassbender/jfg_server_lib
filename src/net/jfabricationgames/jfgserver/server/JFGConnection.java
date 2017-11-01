@@ -158,6 +158,28 @@ public class JFGConnection implements Runnable {
 	}
 	
 	/**
+	 * End the old connection and start a new connection with the socket and streams given as parameter.
+	 * 
+	 * This method is primary used by the JFGSecureLoginServer to re-login a user to the existing JFGConnection.
+	 * 
+	 * @param socket
+	 * 		The new socket.
+	 * 
+	 * @param in
+	 * 		The new ObjectInputStream.
+	 * 
+	 * @param out
+	 * 		The new ObjectOutputStream.
+	 */
+	public void restart(Socket socket, ObjectInputStream in, ObjectOutputStream out) {
+		endConnection();
+		this.socket = socket;
+		this.serverIn = in;
+		this.serverOut = out;
+		startConnection();
+	}
+	
+	/**
 	 * Receive a message that was sent to the socket of this server.
 	 * 
 	 * @param message
@@ -201,6 +223,7 @@ public class JFGConnection implements Runnable {
 			JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_DEBUG);
 		}
 		server.removeConnection(this);
+		connection = null;
 	}
 	
 	/**
@@ -310,5 +333,12 @@ public class JFGConnection implements Runnable {
 	 */
 	public void setSleepTime(int sleepTime) {
 		this.sleepTime = sleepTime;
+	}
+	
+	public ObjectInputStream getInputStream() {
+		return serverIn;
+	}
+	public ObjectOutputStream getOutputStream() {
+		return serverOut;
 	}
 }

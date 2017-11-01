@@ -2,6 +2,7 @@ package net.jfabricationgames.jfgserver.secured_message;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.StreamCorruptedException;
 
 import net.jfabricationgames.jfgserver.client.JFGClient;
 import net.jfabricationgames.jfgserver.client.JFGClientMessage;
@@ -11,6 +12,8 @@ import net.jfabricationgames.jfgserver.interpreter.JFGClientInterpreter;
 public class JFGSecureMessageClient extends JFGClient {
 	
 	private JFGCommunicationSecurity communicationSecurity;
+	
+	private String reloginPassword;
 	
 	/**
 	 * Create a new JFGSecureMessageClient connected to a host on a port and add an interpreter to the client.
@@ -124,6 +127,13 @@ public class JFGSecureMessageClient extends JFGClient {
 						System.err.println("JFGClient: Received object is no JFGClientMessage. Couldn't interprete the message.");
 					}
 				}
+				catch (StreamCorruptedException sce) {
+					sce.printStackTrace();
+					//re-login if the server supports it
+					if (reloginPassword != null) {
+						relogin();
+					}
+				}
 				catch (EOFException eofe) {
 					//eofe.printStackTrace();
 				}
@@ -155,11 +165,32 @@ public class JFGSecureMessageClient extends JFGClient {
 		if (message instanceof JFGAcknowledgeMessage) {
 			communicationSecurity.receiveAcknoledgeMessage((JFGAcknowledgeMessage) message);
 		}
+		else if (message instanceof JFGReloginMessage) {
+			JFGReloginMessage reloginMessage = ((JFGReloginMessage) message);
+			if (reloginMessage.getType() == JFGReloginMessage.ReloginMessageType.SEND_RELOGIN_PASSWORD) {
+				reloginPassword = reloginMessage.getReloginPassword();
+			}
+			else if (reloginMessage.getType() == JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST) {
+				relogin();
+			}
+		}
 		else {
 			if (!communicationSecurity.isResentMessage(message)) {
 				super.receiveMessage(message);
 			}
 			communicationSecurity.sendAcknowledge(message);
 		}
+	}
+	
+	/**
+	 * Re-login this client to the server when the connection broke.
+	 */
+	private void relogin() {
+		closeConnection();
+		startClient();
+		//TODO maybe wait a moment before sending the re-login?
+		JFGReloginMessage reloginMessage = new JFGReloginMessage(JFGReloginMessage.ReloginMessageType.CLIENT_RELOGIN_REQUEST);
+		reloginMessage.setReloginPassword(reloginPassword);
+		sendMessage(reloginMessage);
 	}
 }
