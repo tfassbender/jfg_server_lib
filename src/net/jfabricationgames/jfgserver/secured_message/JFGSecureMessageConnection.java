@@ -15,6 +15,7 @@ import net.jfabricationgames.jfgserver.server.JFGServer;
 public class JFGSecureMessageConnection extends JFGConnection {
 	
 	private JFGCommunicationSecurity communicationSecurity;
+	private JFGSecureMessageOrder messageOrder;
 	
 	/**
 	 * Create a new JFGSecureMessageConnection and pass on the server and the connected socket.
@@ -34,6 +35,7 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	public JFGSecureMessageConnection(JFGServer server, Socket socket) throws IOException {
 		super(server, socket);
 		communicationSecurity = new JFGCommunicationSecurity(this);
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	/**
 	 * Create a new JFGSecureMessageConnection and pass on the server and the connected socket and an interpreter.
@@ -54,6 +56,7 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	public JFGSecureMessageConnection(JFGServer server, Socket socket, JFGServerInterpreter interpreter) throws IOException {
 		super(server, socket, interpreter);
 		communicationSecurity = new JFGCommunicationSecurity(this);
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	
 	/**
@@ -65,6 +68,7 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	public JFGSecureMessageConnection(JFGConnection connection) {
 		super(connection);
 		communicationSecurity = new JFGCommunicationSecurity(this);
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	
 	/**
@@ -76,6 +80,7 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	public JFGSecureMessageConnection(JFGSecureMessageConnection connection) {
 		super(connection);
 		communicationSecurity = connection.communicationSecurity;
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	
 	/**
@@ -144,8 +149,20 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	 */
 	@Override
 	public void sendMessage(JFGClientMessage message) {
+		messageOrder.addSendCount(message);
 		communicationSecurity.secureMessage(message);
-		super.sendMessage(message);
+		synchronized (this) {
+			super.sendMessage(message);			
+		}
+	}
+	/**
+	 * Re-send a message from the communication security.
+	 * No new message order or security needed. 
+	 */
+	protected void resendMessage(JFGClientMessage message) {
+		synchronized (this) {
+			super.sendMessage(message);			
+		}
 	}
 	/**
 	 * Send a message to the server connected to this JFGClient using the writeUnshared method.
@@ -156,8 +173,11 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	 */
 	@Override
 	public void sendMessageUnshared(JFGClientMessage message) {
+		messageOrder.addSendCount(message);
 		communicationSecurity.secureMessage(message);
-		super.sendMessageUnshared(message);
+		synchronized (this) {
+			super.sendMessageUnshared(message);			
+		}
 	}
 	
 	/**
@@ -176,7 +196,14 @@ public class JFGSecureMessageConnection extends JFGConnection {
 		}
 		else {
 			if (!communicationSecurity.isResentMessage(message)) {
-				super.receiveMessage(message);
+				if (messageOrder.isInOrder(message)) {//checks and buffers if false
+					super.receiveMessage(message);
+					JFGSecurableMessage bufferedMessage;
+					while ((bufferedMessage = messageOrder.getNextBufferedMessage()) != null) {
+						//receive all buffered messages
+						super.receiveMessage((JFGServerMessage) bufferedMessage);
+					}
+				}
 			}
 			communicationSecurity.sendAcknowledge(message);
 		}

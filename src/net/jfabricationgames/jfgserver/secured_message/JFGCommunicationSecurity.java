@@ -1,7 +1,10 @@
 package net.jfabricationgames.jfgserver.secured_message;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.jfabricationgames.jfgserver.client.JFGClientMessage;
@@ -16,6 +19,7 @@ public class JFGCommunicationSecurity {
 	
 	private Map<Integer, Serializable> securedMessages;
 	private Map<Integer, Integer> messageTimers;
+	private Map<Integer, Integer> messageCount;
 	
 	private Map<Integer, Serializable> receivedMessages;
 	private Map<Integer, Integer> receivedMessageTimer;
@@ -24,6 +28,14 @@ public class JFGCommunicationSecurity {
 	 * The time in seconds till a secured message is resent if no ACK arrived.
 	 */
 	public static final int RESENT_MESSAGE = 5;
+	/**
+	 * The number of resent messages before the time (RESENT_MESSAGE) is increased by every send to avoid to many unnecessary messages.
+	 */
+	public static final int RESENT_MESSAGE_INCREASE = 5;
+	/**
+	 * The number of resent messages before the message is given up.
+	 */
+	public static final int RESENT_MESSAGE_MAX = 20;
 	/**
 	 * The time in seconds a received message is stored to prevent interpreting resent messages a second time.
 	 */
@@ -41,6 +53,7 @@ public class JFGCommunicationSecurity {
 	private void init() {
 		securedMessages = new HashMap<Integer, Serializable>();
 		messageTimers = new HashMap<Integer, Integer>();
+		messageCount = new HashMap<Integer, Integer>();
 		receivedMessages = new HashMap<Integer, Serializable>();
 		receivedMessageTimer = new HashMap<Integer, Integer>();
 		ackTimerThread = createAckTimerThread();
@@ -60,12 +73,14 @@ public class JFGCommunicationSecurity {
 	public void secureMessage(Serializable message) {
 		if (message instanceof JFGSecurableMessage) {
 			JFGSecurableMessage msg = (JFGSecurableMessage) message;
-			securedMessages.put(msg.getMessageId(), message);
-			messageTimers.put(msg.getMessageId(), 0);
-			//System.out.println("Sending secured message (id: " + msg.getMessageId() + ")");
+			synchronized (this) {
+				securedMessages.put(msg.getMessageId(), message);
+				messageTimers.put(msg.getMessageId(), 0);
+				messageCount.put(msg.getMessageId(), 0);				
+			}
 		}
 		else if (!(message instanceof JFGAcknowledgeMessage)) {
-			throw new JFGSecureCommunicationException("The message sent can't be secured because it doesn't implement SecurableMessage.");
+			throw new JFGSecureCommunicationException("The message sent can't be secured because it doesn't implement JFGSecurableMessage.");
 		}
 	}
 	/**
@@ -80,8 +95,8 @@ public class JFGCommunicationSecurity {
 		synchronized (this) {
 			messageTimers.remove(ackId);
 			securedMessages.remove(ackId);
+			messageCount.remove(ackId);
 		}
-		//System.out.println("Acknowledgement received (id: " + ackId + ")");
 	}
 	
 	/**
@@ -127,7 +142,6 @@ public class JFGCommunicationSecurity {
 			else {
 				connection.sendMessage(ackMessage);
 			}
-			//System.out.println("Sending acknowledgement (id: " + msg.getMessageId() + ")");
 		}
 	}
 	
@@ -141,7 +155,7 @@ public class JFGCommunicationSecurity {
 		if (client != null) {
 			try {
 				client.resetOutput();
-				client.sendMessage((JFGServerMessage) securedMessages.get(messageId));
+				client.resendMessage((JFGServerMessage) securedMessages.get(messageId));
 			}
 			catch (ClassCastException cce) {
 				throw new JFGSecureCommunicationException("Couldn't resent a message.", cce);
@@ -150,7 +164,7 @@ public class JFGCommunicationSecurity {
 		else {
 			try {
 				connection.resetOutput();
-				connection.sendMessage((JFGClientMessage) securedMessages.get(messageId));
+				connection.resendMessage((JFGClientMessage) securedMessages.get(messageId));
 			}
 			catch (ClassCastException cce) {
 				throw new JFGSecureCommunicationException("Couldn't resent a message.", cce);
@@ -163,33 +177,59 @@ public class JFGCommunicationSecurity {
 			@Override
 			public void run() {
 				try {
+					List<Integer> removeMessage = new ArrayList<Integer>();
 					while (true) {
-						synchronized (JFGCommunicationSecurity.this) {
-							for (int messageId : messageTimers.keySet()) {
-								int timer = messageTimers.get(messageId);
-								if (timer < 5) {
-									messageTimers.put(messageId, timer+1);								
+						try {
+							synchronized (JFGCommunicationSecurity.this) {
+								removeMessage.clear();
+								for (int messageId : messageTimers.keySet()) {
+									int timer = messageTimers.get(messageId);
+									int resentThreshold = RESENT_MESSAGE;
+									if (messageCount.get(messageId) > RESENT_MESSAGE_INCREASE) {
+										resentThreshold += (messageCount.get(messageId) - RESENT_MESSAGE_INCREASE) * RESENT_MESSAGE;//additive increase
+									}
+									if (timer < resentThreshold) {
+										messageTimers.put(messageId, timer+1);
+									}
+									else {
+										//re-send the message and reset the timer 
+										messageTimers.put(messageId, 0);
+										messageCount.put(messageId, messageCount.get(messageId)+1);
+										resendMessage(messageId);
+										if (messageCount.get(messageId) > RESENT_MESSAGE_MAX) {
+											//the message was sent to often -> remove it
+											removeMessage.add(messageId);
+										}
+									}
 								}
-								else {
-									//re-send the message and reset the timer 
-									messageTimers.put(messageId, 0);
-									resendMessage(messageId);
+								if (!removeMessage.isEmpty()) {
+									for (int remove : removeMessage) {
+										messageTimers.remove(remove);
+										securedMessages.remove(remove);
+										messageCount.remove(remove);
+										System.err.println("JFGCommunicationSecurity: Message lost (ackId: " + remove + 
+												"); The message was sen't " + RESENT_MESSAGE_MAX + " times without receiving an ACK");
+									}									
 								}
-							}
-							Integer removedMessage = null;
-							for (int messageId : receivedMessageTimer.keySet()) {
-								int timer = messageTimers.get(messageId);
-								if (timer >= STORE_RECEIVED_MESSAGES) {
-									removedMessage = messageId;
+								Integer removedMessage = null;
+								for (int messageId : receivedMessageTimer.keySet()) {
+									int timer = messageTimers.get(messageId);
+									if (timer >= STORE_RECEIVED_MESSAGES) {
+										removedMessage = messageId;
+									}
+									else {
+										messageTimers.put(messageId, timer+1);
+									}
 								}
-								else {
-									messageTimers.put(messageId, timer+1);
+								if (removedMessage != null) {
+									receivedMessageTimer.remove(removedMessage);
+									receivedMessages.remove(removedMessage);
 								}
-							}
-							if (removedMessage != null) {
-								receivedMessageTimer.remove(removedMessage);
-								receivedMessages.remove(removedMessage);
-							}
+							}							
+						}
+						catch (ConcurrentModificationException cme) {
+							//just go on in the next iteration
+							//cme.printStackTrace();
 						}
 						Thread.sleep(1000);
 					}

@@ -12,6 +12,7 @@ import net.jfabricationgames.jfgserver.interpreter.JFGClientInterpreter;
 public class JFGSecureMessageClient extends JFGClient {
 	
 	private JFGCommunicationSecurity communicationSecurity;
+	private JFGSecureMessageOrder messageOrder;
 	
 	private String reloginPassword;
 	
@@ -31,6 +32,7 @@ public class JFGSecureMessageClient extends JFGClient {
 	public JFGSecureMessageClient(String host, int port, JFGClientInterpreter clientInterpreter) {
 		super(host, port, clientInterpreter);
 		communicationSecurity = new JFGCommunicationSecurity(this);
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	/**
 	 * Create a new JFGSecureMessageClient connected to a host on a port.
@@ -47,6 +49,7 @@ public class JFGSecureMessageClient extends JFGClient {
 	public JFGSecureMessageClient(String host, int port) {
 		super(host, port);
 		communicationSecurity = new JFGCommunicationSecurity(this);
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	/**
 	 * Create a new JFGSecureMessageClient using the default host and port (if set).
@@ -63,6 +66,7 @@ public class JFGSecureMessageClient extends JFGClient {
 	public JFGSecureMessageClient(JFGClientInterpreter clientInterpreter) throws IllegalArgumentException {
 		super(clientInterpreter);
 		communicationSecurity = new JFGCommunicationSecurity(this);
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	/**
 	 * Create a new JFGSecureMessageClient using the default host and port (if set).
@@ -74,6 +78,7 @@ public class JFGSecureMessageClient extends JFGClient {
 	public JFGSecureMessageClient() throws IllegalArgumentException{
 		super();
 		communicationSecurity = new JFGCommunicationSecurity(this);
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	/**
 	 * Create a new JFGSecureMessageClient by cloning another secure message client.
@@ -84,6 +89,7 @@ public class JFGSecureMessageClient extends JFGClient {
 	public JFGSecureMessageClient(JFGSecureMessageClient client) {
 		super(client);
 		communicationSecurity = client.communicationSecurity;
+		messageOrder = new JFGSecureMessageOrder();
 	}
 	
 	/**
@@ -95,8 +101,20 @@ public class JFGSecureMessageClient extends JFGClient {
 	 */
 	@Override
 	public void sendMessage(JFGServerMessage message) {
+		messageOrder.addSendCount(message);
 		communicationSecurity.secureMessage(message);
-		super.sendMessage(message);
+		synchronized (this) {
+			super.sendMessage(message);			
+		}
+	}
+	/**
+	 * Re-send a message from the communication security.
+	 * No new message order or security needed. 
+	 */
+	protected void resendMessage(JFGServerMessage message) {
+		synchronized (this) {
+			super.sendMessage(message);			
+		}
 	}
 	/**
 	 * Send a message to the server connected to this JFGClient using the writeUnshared method.
@@ -107,8 +125,11 @@ public class JFGSecureMessageClient extends JFGClient {
 	 */
 	@Override
 	public void sendMessageUnshared(JFGServerMessage message) {
+		messageOrder.addSendCount(message);
 		communicationSecurity.secureMessage(message);
-		super.sendMessageUnshared(message);
+		synchronized (this) {
+			super.sendMessageUnshared(message);			
+		}
 	}
 	
 	/**
@@ -167,16 +188,25 @@ public class JFGSecureMessageClient extends JFGClient {
 		}
 		else if (message instanceof JFGReloginMessage) {
 			JFGReloginMessage reloginMessage = ((JFGReloginMessage) message);
+			messageOrder.isInOrder(message);//call to set the count in the message order
 			if (reloginMessage.getType() == JFGReloginMessage.ReloginMessageType.SEND_RELOGIN_PASSWORD) {
 				reloginPassword = reloginMessage.getReloginPassword();
 			}
 			else if (reloginMessage.getType() == JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST) {
 				relogin();
 			}
+			communicationSecurity.sendAcknowledge(message);
 		}
 		else {
 			if (!communicationSecurity.isResentMessage(message)) {
-				super.receiveMessage(message);
+				if (messageOrder.isInOrder(message)) {//checks and buffers if false
+					super.receiveMessage(message);
+					JFGSecurableMessage bufferedMessage;
+					while ((bufferedMessage = messageOrder.getNextBufferedMessage()) != null) {
+						//receive all buffered messages
+						super.receiveMessage((JFGClientMessage) bufferedMessage);
+					}
+				}
 			}
 			communicationSecurity.sendAcknowledge(message);
 		}
