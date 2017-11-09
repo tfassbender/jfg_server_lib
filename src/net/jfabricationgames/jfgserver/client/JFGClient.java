@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.SocketException;
 
 import net.jfabricationgames.jfgserver.interpreter.JFGClientInterpreter;
+import net.jfabricationgames.jfgserver.secured_message.CorruptedMessage;
 import net.jfabricationgames.jfgserver.server.JFGServer;
 
 /**
@@ -193,6 +194,9 @@ public class JFGClient implements Runnable {
 	 * 		The message send to the server.
 	 */
 	public void sendMessage(JFGServerMessage message) {
+		if (message instanceof CorruptedMessage) {
+			System.out.println("sending corrupted message");
+		}
 		try {
 			if (resetBeforeSending) {
 				resetOutput();
@@ -246,22 +250,24 @@ public class JFGClient implements Runnable {
 	 * Close the streams and end the connection.
 	 */
 	public void closeConnection() {
-		connection.interrupt();
-		try {
-			clientIn.close();
-			clientOut.close();
+		if (connection != null) {
+			connection.interrupt();
+			try {
+				clientIn.close();
+				clientOut.close();
+			}
+			catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
+			//Try to close the socket separately
+			try {
+				socket.close();
+			}
+			catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
+			connection = null;
 		}
-		catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-		//Try to close the socket separately
-		try {
-			socket.close();
-		}
-		catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-		connection = null;
 	}
 	
 	/**

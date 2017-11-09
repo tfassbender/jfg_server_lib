@@ -104,7 +104,7 @@ public class JFGSecureMessageClient extends JFGClient {
 		messageOrder.addSendCount(message);
 		communicationSecurity.secureMessage(message);
 		synchronized (this) {
-			super.sendMessage(message);			
+			super.sendMessage(message);
 		}
 	}
 	/**
@@ -113,7 +113,7 @@ public class JFGSecureMessageClient extends JFGClient {
 	 */
 	protected void resendMessage(JFGServerMessage message) {
 		synchronized (this) {
-			super.sendMessage(message);			
+			super.sendMessage(message);
 		}
 	}
 	/**
@@ -141,6 +141,13 @@ public class JFGSecureMessageClient extends JFGClient {
 			while (true) {
 				try {
 					Object clientRequest = clientIn.readObject();
+					if (clientRequest instanceof CorruptedMessage) {
+						System.out.println("currupted message received");
+						if (reloginPassword != null) {
+							System.out.println("relogin called");
+							relogin();
+						}
+					}
 					if (clientRequest instanceof JFGClientMessage) {
 						receiveMessage((JFGClientMessage) clientRequest);
 					}
@@ -152,7 +159,8 @@ public class JFGSecureMessageClient extends JFGClient {
 					sce.printStackTrace();
 					//re-login if the server supports it
 					if (reloginPassword != null) {
-						relogin();
+						//relogin();
+						break;
 					}
 				}
 				catch (EOFException eofe) {
@@ -187,12 +195,15 @@ public class JFGSecureMessageClient extends JFGClient {
 			communicationSecurity.receiveAcknoledgeMessage((JFGAcknowledgeMessage) message);
 		}
 		else if (message instanceof JFGReloginMessage) {
+			System.out.println("relogin message received");
 			JFGReloginMessage reloginMessage = ((JFGReloginMessage) message);
 			messageOrder.isInOrder(message);//call to set the count in the message order
 			if (reloginMessage.getType() == JFGReloginMessage.ReloginMessageType.SEND_RELOGIN_PASSWORD) {
 				reloginPassword = reloginMessage.getReloginPassword();
+				System.out.println("relogin password received: " + reloginPassword);
 			}
 			else if (reloginMessage.getType() == JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST) {
+				System.out.println("relogin called");
 				relogin();
 			}
 			communicationSecurity.sendAcknowledge(message);
@@ -216,11 +227,29 @@ public class JFGSecureMessageClient extends JFGClient {
 	 * Re-login this client to the server when the connection broke.
 	 */
 	private void relogin() {
-		closeConnection();
-		startClient();
-		//TODO maybe wait a moment before sending the re-login?
-		JFGReloginMessage reloginMessage = new JFGReloginMessage(JFGReloginMessage.ReloginMessageType.CLIENT_RELOGIN_REQUEST);
-		reloginMessage.setReloginPassword(reloginPassword);
-		sendMessage(reloginMessage);
+		//close the connection and start a new one in a new thread
+		//close it in a synchronized block to ensure that there is no more data send while restarting
+		Thread restartThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				synchronized (JFGSecureMessageClient.this) {
+					System.out.println("closing connection");
+					closeConnection();
+					System.out.println("restarting connection");
+					startClient();
+					try {
+						Thread.sleep(1000);
+					}
+					catch (InterruptedException ie) {
+						ie.printStackTrace();
+					}
+					System.out.println("sending client relogin request");
+					JFGReloginMessage reloginMessage = new JFGReloginMessage(JFGReloginMessage.ReloginMessageType.CLIENT_RELOGIN_REQUEST);
+					reloginMessage.setReloginPassword(reloginPassword);
+					sendMessage(reloginMessage);
+				}
+			}
+		});
+		restartThread.start();
 	}
 }

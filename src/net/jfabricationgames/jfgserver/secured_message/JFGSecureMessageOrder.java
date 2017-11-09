@@ -72,4 +72,23 @@ public class JFGSecureMessageOrder {
 			throw new JFGSecureCommunicationException("The message sent can't be secured because it doesn't implement JFGSecurableMessage.");
 		}
 	}
+	
+	/**
+	 * Get the message number that is expected for the next message.
+	 */
+	public int getExpectedMessageNumber() {
+		return lastReceived+1;
+	}
+	/**
+	 * Increase the last received message number (without receiving a message).
+	 */
+	protected void increaseMessageNumber(int increase) {
+		lastReceived += increase;
+	}
+	/**
+	 * Get the number of buffered messages.
+	 */
+	public int getMessagesInBuffer() {
+		return messageBuffer.size();
+	}
 }

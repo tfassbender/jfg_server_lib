@@ -39,20 +39,22 @@ public class JFGSecureLoginServer extends JFGLoginServer {
 		JFGReloginMessage reloginMessage = new JFGReloginMessage(ReloginMessageType.SEND_RELOGIN_PASSWORD);
 		String reloginPassword = generatePassword();
 		reloginMessage.setReloginPassword(reloginPassword);
-		connection.sendMessage(reloginMessage);
+		connection.sendMessageUnshared(reloginMessage);
+		System.out.println("maping relogin password: " + reloginPassword);
 		reloginPasswordConnections.put(reloginPassword, connection);
 	}
 	
 	@Override
 	public void removeConnection(JFGConnection connection) {
 		super.removeConnection(connection);
-		String pass = "";
+		/*String pass = "";
 		for (String reloginPassword : reloginPasswordConnections.keySet()) {
 			if (connection.equals(reloginPasswordConnections.get(reloginPassword))) {
 				pass = reloginPassword;
 			}
 		}
-		reloginPasswordConnections.remove(pass);
+		System.out.println("removing password: " + pass);
+		reloginPasswordConnections.remove(pass);*/
 	}
 	
 	/**
@@ -65,10 +67,14 @@ public class JFGSecureLoginServer extends JFGLoginServer {
 	 * 		The re-login password.
 	 */
 	public void relogin(JFGConnection connection, String password) {
+		System.out.println("server relogin called");
 		JFGConnection existing = reloginPasswordConnections.get(password);
+		System.out.println("connection existing: " + (existing != null));
 		if (existing != null) {
 			removeWaiting(connection);
+			System.out.println("restarting connection");
 			existing.restart(connection.getSocket(), connection.getInputStream(), connection.getOutputStream());
+			connection.stopConnection();
 		}
 	}
 	

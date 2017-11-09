@@ -2,6 +2,8 @@ package net.jfabricationgames.jfgserver.secured_message;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -90,6 +92,11 @@ public class JFGSecureMessageConnection extends JFGConnection {
 		super();
 	}
 	
+	public void restart(Socket socket, ObjectInputStream in, ObjectOutputStream out) {
+		super.restart(socket, in, out);
+		messageOrder.increaseMessageNumber(2);//increase the count for two re-login-messages
+	}
+	
 	/**
 	 * The run method from {@link Runnable} to make the connection listen to the clients inputs in a different thread.
 	 * 
@@ -97,10 +104,16 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	 */
 	@Override
 	public void run() {
+		System.out.println("started thread: " + Thread.currentThread());
 		try {
 			while (true) {
 				try {
 					Object clientRequest = serverIn.readObject();
+					if (clientRequest instanceof CorruptedMessage) {
+						System.out.println("corrupted message received; relogin called " + Thread.currentThread());
+						relogin();
+					}
+					else 
 					if (clientRequest instanceof JFGServerMessage) {
 						receiveMessage((JFGServerMessage) clientRequest);
 					}
@@ -124,6 +137,7 @@ public class JFGSecureMessageConnection extends JFGConnection {
 		}
 		catch (InterruptedException ie) {
 			JFGServer.printError(ie, JFGServer.ERROR_LEVEL_ALL);
+			System.out.println(Thread.currentThread() + " interrupted");
 		}
 		catch (ClassNotFoundException cnfe) {
 			JFGServer.printError(cnfe, JFGServer.ERROR_LEVEL_DEBUG);
@@ -195,7 +209,11 @@ public class JFGSecureMessageConnection extends JFGConnection {
 			communicationSecurity.receiveAcknoledgeMessage((JFGAcknowledgeMessage) message);
 		}
 		else {
-			if (!communicationSecurity.isResentMessage(message)) {
+			if (message instanceof JFGReloginMessage) {
+				System.out.println("relogin message received");
+				super.receiveMessage(message);
+			}
+			else if (!communicationSecurity.isResentMessage(message)) {
 				if (messageOrder.isInOrder(message)) {//checks and buffers if false
 					super.receiveMessage(message);
 					JFGSecurableMessage bufferedMessage;
@@ -203,6 +221,10 @@ public class JFGSecureMessageConnection extends JFGConnection {
 						//receive all buffered messages
 						super.receiveMessage((JFGServerMessage) bufferedMessage);
 					}
+				}
+				else {
+					System.out.println("Message not in order (expected: " + messageOrder.getExpectedMessageNumber() + "; received: " + 
+							((JFGSecurableMessage) message).getSendCount() + "; buffered: " + messageOrder.getMessagesInBuffer() + ");");
 				}
 			}
 			communicationSecurity.sendAcknowledge(message);
@@ -213,7 +235,10 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	 * Send a request to the client to re-login into the server.
 	 */
 	private void relogin() {
+		System.out.println("relogin sent " + Thread.currentThread());
 		JFGReloginMessage reloginMessage = new JFGReloginMessage(JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST);
 		sendMessage(reloginMessage);
+		//close the connection after sending the request (without closing the resources)
+		endConnection(false);
 	}
 }

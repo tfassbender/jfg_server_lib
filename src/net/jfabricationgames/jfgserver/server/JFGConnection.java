@@ -172,11 +172,12 @@ public class JFGConnection implements Runnable {
 	 * 		The new ObjectOutputStream.
 	 */
 	public void restart(Socket socket, ObjectInputStream in, ObjectOutputStream out) {
-		endConnection();
+		endConnection(false);
 		this.socket = socket;
 		this.serverIn = in;
 		this.serverOut = out;
 		startConnection();
+		System.out.println("connection restarted " + Thread.currentThread());
 	}
 	
 	/**
@@ -201,29 +202,54 @@ public class JFGConnection implements Runnable {
 		}
 		connection = new Thread(this);
 		connection.start();
+		System.out.println("connection started with interpreter: " + interpreter.getClass().getName());
 	}
 	
 	/**
-	 * End the connection and close all resources.
+	 * End the connection and close all resources and remove the connection from the server.
 	 */
 	public void endConnection() {
-		connection.interrupt();
-		try {
-			serverIn.close();
-			serverOut.close();
+		endConnection(true);
+	}
+	/**
+	 * End the connection and close all resources.
+	 * 
+	 * @param removeConnection
+	 * 		Optionally remove the connection from the server.
+	 */
+	public void endConnection(boolean removeConnection) {
+		if (connection != null) {
+			connection.interrupt();
+			try {
+				serverIn.close();
+				serverOut.close();
+			}
+			catch (IOException ioe) {
+				JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_DEBUG);
+			}
+			//Try to close the socket separately
+			try {
+				socket.close();
+			}
+			catch (IOException ioe) {
+				JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_DEBUG);
+			}
+			if (removeConnection) {
+				server.removeConnection(this);				
+			}
+			connection = null;
 		}
-		catch (IOException ioe) {
-			JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_DEBUG);
+	}
+	
+	/**
+	 * Stop the connection by interrupting the thread WITHOUT closing the resources.
+	 */
+	public void stopConnection() {
+		if (connection != null) {
+			connection.interrupt();
+			server.removeConnection(this);
+			connection = null;
 		}
-		//Try to close the socket separately
-		try {
-			socket.close();
-		}
-		catch (IOException ioe) {
-			JFGServer.printError(ioe, JFGServer.ERROR_LEVEL_DEBUG);
-		}
-		server.removeConnection(this);
-		connection = null;
 	}
 	
 	/**

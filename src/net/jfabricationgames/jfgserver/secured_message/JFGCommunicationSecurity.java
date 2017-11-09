@@ -71,7 +71,13 @@ public class JFGCommunicationSecurity {
 	 * 		A JFGSecureCommunicationException is thrown when the message that is to be secured doesn't implement SecurableMessage.
 	 */
 	public void secureMessage(Serializable message) {
-		if (message instanceof JFGSecurableMessage) {
+		if (message instanceof CorruptedMessage) {
+			System.out.println("corrupted message not secured.");
+		}
+		else if (message instanceof JFGReloginMessage && ((JFGReloginMessage) message).getType() == JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST) {
+			System.out.println("server relogin request not secured.");
+		}
+		else if (message instanceof JFGSecurableMessage) {
 			JFGSecurableMessage msg = (JFGSecurableMessage) message;
 			synchronized (this) {
 				securedMessages.put(msg.getMessageId(), message);
@@ -154,8 +160,10 @@ public class JFGCommunicationSecurity {
 	private void resendMessage(int messageId) {
 		if (client != null) {
 			try {
-				client.resetOutput();
-				client.resendMessage((JFGServerMessage) securedMessages.get(messageId));
+				synchronized (client) {
+					client.resetOutput();
+					client.resendMessage((JFGServerMessage) securedMessages.get(messageId));
+				}
 			}
 			catch (ClassCastException cce) {
 				throw new JFGSecureCommunicationException("Couldn't resent a message.", cce);
@@ -163,8 +171,10 @@ public class JFGCommunicationSecurity {
 		}
 		else {
 			try {
-				connection.resetOutput();
-				connection.resendMessage((JFGClientMessage) securedMessages.get(messageId));
+				synchronized (connection) {
+					connection.resetOutput();
+					connection.resendMessage((JFGClientMessage) securedMessages.get(messageId));
+				}
 			}
 			catch (ClassCastException cce) {
 				throw new JFGSecureCommunicationException("Couldn't resent a message.", cce);
