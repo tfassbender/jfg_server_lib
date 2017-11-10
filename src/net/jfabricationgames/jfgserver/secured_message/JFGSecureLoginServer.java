@@ -22,12 +22,12 @@ import net.jfabricationgames.jfgserver.server.JFGServer;
 public class JFGSecureLoginServer extends JFGLoginServer {
 	
 	private Map<String, JFGConnection> reloginPasswordConnections;
-
+	
 	public JFGSecureLoginServer(int port) {
 		super(port);
 		reloginPasswordConnections = new HashMap<String, JFGConnection>();
 	}
-
+	
 	@Override
 	public void chooseInterpreter() {
 		setInterpreterFactory(new DefaultSecureLoginInterpreter(this));
@@ -40,7 +40,6 @@ public class JFGSecureLoginServer extends JFGLoginServer {
 		String reloginPassword = generatePassword();
 		reloginMessage.setReloginPassword(reloginPassword);
 		connection.sendMessageUnshared(reloginMessage);
-		System.out.println("maping relogin password: " + reloginPassword);
 		reloginPasswordConnections.put(reloginPassword, connection);
 	}
 	
@@ -67,12 +66,9 @@ public class JFGSecureLoginServer extends JFGLoginServer {
 	 * 		The re-login password.
 	 */
 	public void relogin(JFGConnection connection, String password) {
-		System.out.println("server relogin called");
 		JFGConnection existing = reloginPasswordConnections.get(password);
-		System.out.println("connection existing: " + (existing != null));
 		if (existing != null) {
 			removeWaiting(connection);
-			System.out.println("restarting connection");
 			existing.restart(connection.getSocket(), connection.getInputStream(), connection.getOutputStream());
 			connection.stopConnection();
 		}

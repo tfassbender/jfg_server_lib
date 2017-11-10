@@ -202,7 +202,6 @@ public class JFGConnection implements Runnable {
 		}
 		connection = new Thread(this);
 		connection.start();
-		System.out.println("connection started with interpreter: " + interpreter.getClass().getName());
 	}
 	
 	/**

@@ -71,13 +71,7 @@ public class JFGCommunicationSecurity {
 	 * 		A JFGSecureCommunicationException is thrown when the message that is to be secured doesn't implement SecurableMessage.
 	 */
 	public void secureMessage(Serializable message) {
-		if (message instanceof CorruptedMessage) {
-			System.out.println("corrupted message not secured.");
-		}
-		else if (message instanceof JFGReloginMessage && ((JFGReloginMessage) message).getType() == JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST) {
-			System.out.println("server relogin request not secured.");
-		}
-		else if (message instanceof JFGSecurableMessage) {
+		if (!(message instanceof JFGReloginMessage && ((JFGReloginMessage) message).getType() == JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST) && message instanceof JFGSecurableMessage) {
 			JFGSecurableMessage msg = (JFGSecurableMessage) message;
 			synchronized (this) {
 				securedMessages.put(msg.getMessageId(), message);

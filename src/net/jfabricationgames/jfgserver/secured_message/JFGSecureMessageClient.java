@@ -141,13 +141,6 @@ public class JFGSecureMessageClient extends JFGClient {
 			while (true) {
 				try {
 					Object clientRequest = clientIn.readObject();
-					if (clientRequest instanceof CorruptedMessage) {
-						System.out.println("currupted message received");
-						if (reloginPassword != null) {
-							System.out.println("relogin called");
-							relogin();
-						}
-					}
 					if (clientRequest instanceof JFGClientMessage) {
 						receiveMessage((JFGClientMessage) clientRequest);
 					}
@@ -159,8 +152,11 @@ public class JFGSecureMessageClient extends JFGClient {
 					sce.printStackTrace();
 					//re-login if the server supports it
 					if (reloginPassword != null) {
-						//relogin();
+						relogin();
 						break;
+					}
+					else {
+						System.err.println("StreamCorruptedException received; Couldn't relogin because there is no password.");
 					}
 				}
 				catch (EOFException eofe) {
@@ -195,15 +191,12 @@ public class JFGSecureMessageClient extends JFGClient {
 			communicationSecurity.receiveAcknoledgeMessage((JFGAcknowledgeMessage) message);
 		}
 		else if (message instanceof JFGReloginMessage) {
-			System.out.println("relogin message received");
 			JFGReloginMessage reloginMessage = ((JFGReloginMessage) message);
 			messageOrder.isInOrder(message);//call to set the count in the message order
 			if (reloginMessage.getType() == JFGReloginMessage.ReloginMessageType.SEND_RELOGIN_PASSWORD) {
 				reloginPassword = reloginMessage.getReloginPassword();
-				System.out.println("relogin password received: " + reloginPassword);
 			}
 			else if (reloginMessage.getType() == JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST) {
-				System.out.println("relogin called");
 				relogin();
 			}
 			communicationSecurity.sendAcknowledge(message);
@@ -233,9 +226,7 @@ public class JFGSecureMessageClient extends JFGClient {
 			@Override
 			public void run() {
 				synchronized (JFGSecureMessageClient.this) {
-					System.out.println("closing connection");
 					closeConnection();
-					System.out.println("restarting connection");
 					startClient();
 					try {
 						Thread.sleep(1000);
@@ -243,7 +234,6 @@ public class JFGSecureMessageClient extends JFGClient {
 					catch (InterruptedException ie) {
 						ie.printStackTrace();
 					}
-					System.out.println("sending client relogin request");
 					JFGReloginMessage reloginMessage = new JFGReloginMessage(JFGReloginMessage.ReloginMessageType.CLIENT_RELOGIN_REQUEST);
 					reloginMessage.setReloginPassword(reloginPassword);
 					sendMessage(reloginMessage);

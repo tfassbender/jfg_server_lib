@@ -104,16 +104,10 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	 */
 	@Override
 	public void run() {
-		System.out.println("started thread: " + Thread.currentThread());
 		try {
 			while (true) {
 				try {
 					Object clientRequest = serverIn.readObject();
-					if (clientRequest instanceof CorruptedMessage) {
-						System.out.println("corrupted message received; relogin called " + Thread.currentThread());
-						relogin();
-					}
-					else 
 					if (clientRequest instanceof JFGServerMessage) {
 						receiveMessage((JFGServerMessage) clientRequest);
 					}
@@ -137,7 +131,6 @@ public class JFGSecureMessageConnection extends JFGConnection {
 		}
 		catch (InterruptedException ie) {
 			JFGServer.printError(ie, JFGServer.ERROR_LEVEL_ALL);
-			System.out.println(Thread.currentThread() + " interrupted");
 		}
 		catch (ClassNotFoundException cnfe) {
 			JFGServer.printError(cnfe, JFGServer.ERROR_LEVEL_DEBUG);
@@ -210,8 +203,7 @@ public class JFGSecureMessageConnection extends JFGConnection {
 		}
 		else {
 			if (message instanceof JFGReloginMessage) {
-				System.out.println("relogin message received");
-				super.receiveMessage(message);
+				super.receiveMessage(message);//message order count is increased when the relogin password is received
 			}
 			else if (!communicationSecurity.isResentMessage(message)) {
 				if (messageOrder.isInOrder(message)) {//checks and buffers if false
@@ -223,7 +215,7 @@ public class JFGSecureMessageConnection extends JFGConnection {
 					}
 				}
 				else {
-					System.out.println("Message not in order (expected: " + messageOrder.getExpectedMessageNumber() + "; received: " + 
+					System.err.println("Message not in order (expected: " + messageOrder.getExpectedMessageNumber() + "; received: " + 
 							((JFGSecurableMessage) message).getSendCount() + "; buffered: " + messageOrder.getMessagesInBuffer() + ");");
 				}
 			}
@@ -235,7 +227,6 @@ public class JFGSecureMessageConnection extends JFGConnection {
 	 * Send a request to the client to re-login into the server.
 	 */
 	private void relogin() {
-		System.out.println("relogin sent " + Thread.currentThread());
 		JFGReloginMessage reloginMessage = new JFGReloginMessage(JFGReloginMessage.ReloginMessageType.SERVER_RELOGIN_REQUEST);
 		sendMessage(reloginMessage);
 		//close the connection after sending the request (without closing the resources)

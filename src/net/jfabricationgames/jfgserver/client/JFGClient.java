@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.net.SocketException;
 
 import net.jfabricationgames.jfgserver.interpreter.JFGClientInterpreter;
-import net.jfabricationgames.jfgserver.secured_message.CorruptedMessage;
 import net.jfabricationgames.jfgserver.server.JFGServer;
 
 /**
@@ -194,9 +193,6 @@ public class JFGClient implements Runnable {
 	 * 		The message send to the server.
 	 */
 	public void sendMessage(JFGServerMessage message) {
-		if (message instanceof CorruptedMessage) {
-			System.out.println("sending corrupted message");
-		}
 		try {
 			if (resetBeforeSending) {
 				resetOutput();

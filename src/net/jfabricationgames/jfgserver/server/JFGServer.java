@@ -70,7 +70,6 @@ public abstract class JFGServer {
 					while (true) {
 						try {
 							Socket connectionSocket = serverSocket.accept();
-							System.out.println("connection accepted");
 							JFGConnection connection = connectionFactory.getInstance(JFGServer.this, connectionSocket);
 							addInterpreter(connection);
 							addConnection(connection);
