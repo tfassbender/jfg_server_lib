@@ -9,6 +9,7 @@ import java.util.Map;
 
 import net.jfabricationgames.jfgserver.client.JFGClientMessage;
 import net.jfabricationgames.jfgserver.client.JFGServerMessage;
+import net.jfabricationgames.jfgserver.server.JFGServer;
 
 public class JFGCommunicationSecurity {
 	
@@ -211,8 +212,8 @@ public class JFGCommunicationSecurity {
 										messageTimers.remove(remove);
 										securedMessages.remove(remove);
 										messageCount.remove(remove);
-										System.err.println("JFGCommunicationSecurity: Message lost (ackId: " + remove + 
-												"); The message was sen't " + RESENT_MESSAGE_MAX + " times without receiving an ACK");
+										JFGServer.printError("JFGCommunicationSecurity: Message lost (ackId: " + remove + 
+												"); The message was sen't " + RESENT_MESSAGE_MAX + " times without receiving an ACK", JFGServer.ERROR_LEVEL_DEBUG);
 									}									
 								}
 								Integer removedMessage = null;
