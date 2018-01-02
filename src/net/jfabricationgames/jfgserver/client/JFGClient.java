@@ -32,6 +32,8 @@ public class JFGClient implements Runnable {
 	
 	protected static boolean resetBeforeSending = false;
 	
+	protected static boolean exceptionOnConnectionRefuse = false;
+	
 	/**
 	 * Create a new JFGClient connected to a host on a port and add an interpreter to the client.
 	 * The client is started directly because the interpreter is already known.
@@ -174,7 +176,12 @@ public class JFGClient implements Runnable {
 			connection.start();
 		}
 		catch (IOException ioe) {
-			ioe.printStackTrace();
+			if (exceptionOnConnectionRefuse) {
+				throw new JFGConnectException("The connection to the server could not be established.", ioe);
+			}
+			else {
+				ioe.printStackTrace();
+			}
 		}
 	}
 	/**
@@ -327,5 +334,24 @@ public class JFGClient implements Runnable {
 	 */
 	public static void setResetBeforeSending(boolean resetBeforeSending) {
 		JFGClient.resetBeforeSending = resetBeforeSending;
+	}
+	
+	/**
+	 * Indicates whether a runtime exception is thrown when the connection is refused.
+	 * 
+	 * @return
+	 * 		The current state of the variable.
+	 */
+	public static boolean isExceptionOnConnectionRefuse() {
+		return exceptionOnConnectionRefuse;
+	}
+	/**
+	 * Change the client behavior when the connection to the server is refused.
+	 * 
+	 * @param exceptionOnConnectionRefuse
+	 * 		Indicates whether the client shall throw a runtime exception when the server refuses the connection.
+	 */
+	public static void setExceptionOnConnectionRefuse(boolean exceptionOnConnectionRefuse) {
+		JFGClient.exceptionOnConnectionRefuse = exceptionOnConnectionRefuse;
 	}
 }
